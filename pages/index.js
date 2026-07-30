@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const PLANS = [
   {
@@ -595,11 +595,41 @@ export default function Home() {
   const [loading, setLoading]       = useState(null);
   const [navOpen, setNavOpen]       = useState(false);
   const [membershipOpen, setMembershipOpen] = useState(false);
+  const [bottleRotation, setBottleRotation] = useState(0);
+  const bottleRef = useRef(null);
 
   useEffect(() => {
     function onPopState() { setMembershipOpen(false); }
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  useEffect(() => {
+    let ticking = false;
+    function computeRotation() {
+      const el = bottleRef.current;
+      if (!el) { ticking = false; return; }
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      const total = rect.height + vh;
+      const scrolled = vh - rect.top;
+      const progress = Math.min(1, Math.max(0, scrolled / total));
+      setBottleRotation(progress * 1440); // 4 full spins across the scroll-through
+      ticking = false;
+    }
+    function onScroll() {
+      if (!ticking) {
+        window.requestAnimationFrame(computeRotation);
+        ticking = true;
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    computeRotation();
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
   }, []);
 
   function openMembership() {
@@ -688,6 +718,15 @@ export default function Home() {
         .marquee-wrap{overflow:hidden;background:rgba(201,168,76,0.07);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:0.9rem 0;}
         .marquee-track{display:flex;width:max-content;animation:marquee 32s linear infinite;}
         @keyframes marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+        /* PEPTIDE BOTTLE SHOWCASE */
+        .bottle-feature{background:var(--bg);display:flex;align-items:center;justify-content:center;min-height:80vh;padding:4rem 2rem;overflow:hidden;position:relative;}
+        .bottle-feature::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(201,168,76,0.08) 0%,transparent 70%);pointer-events:none;}
+        .bottle-wrap{width:220px;filter:drop-shadow(0 25px 45px rgba(0,0,0,0.5));will-change:transform;position:relative;z-index:1;}
+        .bottle-wrap svg{width:100%;height:auto;display:block;}
+        @media(max-width:960px){.bottle-wrap{width:170px;}}
+        @media(max-width:600px){.bottle-wrap{width:140px;} .bottle-feature{min-height:65vh;}}
+        @media(prefers-reduced-motion:reduce){.bottle-wrap{transform:none !important;}}
         .marquee-item{display:flex;align-items:center;gap:1.5rem;padding:0 2.5rem;white-space:nowrap;font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(247,245,240,0.3);}
         .marquee-item::after{content:'✦';color:var(--gold);opacity:0.5;font-size:0.45rem;}
 
@@ -948,6 +987,60 @@ export default function Home() {
               <span key={`${i}-${j}`} className="marquee-item">{item}</span>
             ))
           )}
+        </div>
+      </div>
+
+      {/* PEPTIDE BOTTLE SHOWCASE */}
+      <div className="bottle-feature" ref={bottleRef}>
+        <div className="bottle-wrap" style={{ transform: `rotate(${bottleRotation}deg)` }}>
+          <svg viewBox="0 0 200 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="InHype Sanctuary peptide vial">
+            <defs>
+              <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="rgba(226,192,106,0.14)" />
+                <stop offset="45%" stopColor="rgba(247,245,240,0.2)" />
+                <stop offset="100%" stopColor="rgba(15,26,23,0.4)" />
+              </linearGradient>
+              <linearGradient id="liquidGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#e2c06a" />
+                <stop offset="100%" stopColor="#a9822f" />
+              </linearGradient>
+              <clipPath id="vialClip">
+                <rect x="30" y="84" width="140" height="300" rx="18" />
+              </clipPath>
+              <clipPath id="logoClip">
+                <circle cx="100" cy="250" r="42" />
+              </clipPath>
+            </defs>
+
+            {/* cap */}
+            <rect x="45" y="12" width="110" height="56" rx="10" fill="#c9a84c" />
+            {[0,1,2,3,4,5,6].map(i => (
+              <rect key={i} x={52 + i * 14} y="12" width="3" height="56" fill="rgba(15,26,23,0.15)" />
+            ))}
+            {/* stopper band */}
+            <rect x="45" y="68" width="110" height="18" fill="#2a2a28" />
+
+            {/* vial body */}
+            <rect x="30" y="84" width="140" height="300" rx="18" fill="url(#glassGrad)" stroke="rgba(201,168,76,0.45)" strokeWidth="2" />
+
+            {/* liquid */}
+            <g clipPath="url(#vialClip)">
+              <rect x="30" y="220" width="140" height="164" fill="url(#liquidGrad)" opacity="0.85" />
+            </g>
+
+            {/* glass sheen */}
+            <rect x="46" y="96" width="10" height="276" rx="5" fill="rgba(255,255,255,0.18)" />
+
+            {/* label */}
+            <rect x="42" y="196" width="116" height="108" rx="10" fill="#f7f5f0" opacity="0.96" />
+            <g clipPath="url(#logoClip)">
+              <image href="/logo.webp" x="58" y="208" width="84" height="84" preserveAspectRatio="xMidYMid slice" />
+            </g>
+            <text x="100" y="288" textAnchor="middle" fontFamily="'Cormorant Garamond', serif" fontStyle="italic" fontSize="11" fill="#0f1a17">InHype Sanctuary</text>
+
+            {/* bottom rim shadow */}
+            <ellipse cx="100" cy="384" rx="70" ry="8" fill="rgba(0,0,0,0.25)" />
+          </svg>
         </div>
       </div>
 
