@@ -594,15 +594,18 @@ function CheckoutForm({ plan, onClose, onSuccess }) {
   const [ready, setReady]     = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]     = useState('');
-  const [fields, setFields]   = useState({
-    firstName:'', lastName:'', email:'', phone:'',
-    address1:'', city:'', state:'', zip:'',
-  });
   const configuredRef = useRef(false);
-
-  function update(key) {
-    return (e) => setFields(f => ({ ...f, [key]: e.target.value }));
-  }
+  // Uncontrolled refs (not React state) so browser/Safari autofill — which sets
+  // input values directly in the DOM without always firing React's onChange —
+  // is still picked up correctly when we read values at submit time.
+  const firstNameRef = useRef(null);
+  const lastNameRef  = useRef(null);
+  const emailRef     = useRef(null);
+  const phoneRef     = useRef(null);
+  const address1Ref  = useRef(null);
+  const cityRef      = useRef(null);
+  const stateRef     = useRef(null);
+  const zipRef       = useRef(null);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -651,7 +654,14 @@ function CheckoutForm({ plan, onClose, onSuccess }) {
               body: JSON.stringify({
                 plan: plan.id,
                 token: response.token,
-                ...fields,
+                firstName: firstNameRef.current?.value.trim() || '',
+                lastName:  lastNameRef.current?.value.trim() || '',
+                email:     emailRef.current?.value.trim() || '',
+                phone:     phoneRef.current?.value.trim() || '',
+                address1:  address1Ref.current?.value.trim() || '',
+                city:      cityRef.current?.value.trim() || '',
+                state:     stateRef.current?.value.trim() || '',
+                zip:       zipRef.current?.value.trim() || '',
               }),
             });
             const data = await res.json();
@@ -678,7 +688,7 @@ function CheckoutForm({ plan, onClose, onSuccess }) {
 
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fields]);
+  }, [plan.id]);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -687,7 +697,10 @@ function CheckoutForm({ plan, onClose, onSuccess }) {
       setError('Please agree to the Commitment & Cancellation Policy and Medical Disclaimer to continue.');
       return;
     }
-    if (!fields.firstName || !fields.lastName || !fields.email) {
+    const firstName = firstNameRef.current?.value.trim();
+    const lastName  = lastNameRef.current?.value.trim();
+    const email     = emailRef.current?.value.trim();
+    if (!firstName || !lastName || !email) {
       setError('Please fill in your name and email.');
       return;
     }
@@ -740,20 +753,20 @@ function CheckoutForm({ plan, onClose, onSuccess }) {
         <form onSubmit={handleSubmit}>
           <p className="co-section-label">Your information</p>
           <div className="co-row">
-            <input className="co-input" placeholder="First name" value={fields.firstName} onChange={update('firstName')} required />
-            <input className="co-input" placeholder="Last name" value={fields.lastName} onChange={update('lastName')} required />
+            <input ref={firstNameRef} className="co-input" placeholder="First name" defaultValue="" autoComplete="given-name" required />
+            <input ref={lastNameRef} className="co-input" placeholder="Last name" defaultValue="" autoComplete="family-name" required />
           </div>
           <div className="co-row">
-            <input className="co-input" type="email" placeholder="Email" value={fields.email} onChange={update('email')} required />
-            <input className="co-input" type="tel" placeholder="Phone" value={fields.phone} onChange={update('phone')} />
+            <input ref={emailRef} className="co-input" type="email" placeholder="Email" defaultValue="" autoComplete="email" required />
+            <input ref={phoneRef} className="co-input" type="tel" placeholder="Phone" defaultValue="" autoComplete="tel" />
           </div>
           <div className="co-field" style={{marginBottom:'0.7rem'}}>
-            <input className="co-input" placeholder="Billing address" value={fields.address1} onChange={update('address1')} />
+            <input ref={address1Ref} className="co-input" placeholder="Billing address" defaultValue="" autoComplete="address-line1" />
           </div>
           <div className="co-row co-row-3">
-            <input className="co-input" placeholder="City" value={fields.city} onChange={update('city')} />
-            <input className="co-input" placeholder="State" value={fields.state} onChange={update('state')} />
-            <input className="co-input" placeholder="ZIP" value={fields.zip} onChange={update('zip')} />
+            <input ref={cityRef} className="co-input" placeholder="City" defaultValue="" autoComplete="address-level2" />
+            <input ref={stateRef} className="co-input" placeholder="State" defaultValue="" autoComplete="address-level1" />
+            <input ref={zipRef} className="co-input" placeholder="ZIP" defaultValue="" autoComplete="postal-code" />
           </div>
 
           <p className="co-section-label">Payment</p>
