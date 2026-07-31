@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import { useState, useEffect, useRef } from 'react';
+import { POLICY_VERSION, COMMITMENT_ITEMS, MEDICAL_DISCLAIMER } from '../lib/policyText';
 
 const PLANS = [
   {
@@ -659,6 +660,7 @@ function CheckoutForm({ plan, onClose, onSuccess }) {
                 plan: plan.id,
                 token: response.token,
                 agreed: agreedRef.current,
+                policyVersion: POLICY_VERSION,
                 firstName: firstNameRef.current?.value.trim() || '',
                 lastName:  lastNameRef.current?.value.trim() || '',
                 email:     emailRef.current?.value.trim() || '',
@@ -738,7 +740,13 @@ function CheckoutForm({ plan, onClose, onSuccess }) {
         input.co-input::placeholder{color:rgba(247,245,240,0.3);}
         .co-card-field{background:var(--bg);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:0.75rem 0.85rem;height:42px;transition:border-color .2s;}
         .co-card-field iframe{width:100%!important;}
-        .co-agree{display:flex;align-items:flex-start;gap:0.6rem;margin:1.5rem 0 1.25rem;cursor:pointer;}
+        .co-terms-box{background:var(--bg);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:1rem 1.1rem;max-height:180px;overflow-y:auto;margin-top:1.25rem;}
+        .co-terms-box h4{font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.6rem;font-weight:600;}
+        .co-terms-box ol{margin:0 0 0.9rem 1.1rem;padding:0;}
+        .co-terms-box li{font-size:0.72rem;color:rgba(247,245,240,0.55);line-height:1.6;margin-bottom:0.35rem;}
+        .co-terms-box p{font-size:0.72rem;color:rgba(247,245,240,0.55);line-height:1.6;}
+        .co-terms-version{font-size:0.62rem;color:rgba(247,245,240,0.25);margin-top:0.75rem;}
+        .co-agree{display:flex;align-items:flex-start;gap:0.6rem;margin:1rem 0 1.25rem;cursor:pointer;}
         .co-agree input{margin-top:0.2rem;accent-color:var(--gold);cursor:pointer;flex-shrink:0;}
         .co-agree span{font-size:0.74rem;color:var(--text);line-height:1.6;}
         .co-error{background:rgba(201,90,76,0.1);border:1px solid rgba(201,90,76,0.3);color:#e08d7f;border-radius:8px;padding:0.7rem 0.9rem;font-size:0.75rem;margin-bottom:1.1rem;line-height:1.5;}
@@ -785,9 +793,19 @@ function CheckoutForm({ plan, onClose, onSuccess }) {
 
           {error && <div className="co-error">{error}</div>}
 
+          <div className="co-terms-box">
+            <h4>Commitment &amp; Cancellation Policy</h4>
+            <ol>
+              {COMMITMENT_ITEMS.map((item, i) => <li key={i}>{item}</li>)}
+            </ol>
+            <h4>Medical Disclaimer</h4>
+            <p>{MEDICAL_DISCLAIMER}</p>
+            <p className="co-terms-version">Policy version {POLICY_VERSION}</p>
+          </div>
+
           <label className="co-agree">
             <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} />
-            <span>I agree to the Commitment &amp; Cancellation Policy and Medical Disclaimer, including the 6-month membership term and monthly recurring billing until cancelled per policy.</span>
+            <span>I have read and agree to the Commitment &amp; Cancellation Policy and Medical Disclaimer above, including the 6-month membership term and monthly recurring billing until cancelled per policy.</span>
           </label>
 
           <button id="co-submit-btn" type="submit" className="co-submit" disabled={submitting || !agreed}>
