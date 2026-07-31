@@ -1,6 +1,5 @@
 import Head from 'next/head';
 import { useState, useEffect, useRef } from 'react';
-import * as THREE from 'three';
 
 const PLANS = [
   {
@@ -357,7 +356,7 @@ function MembershipModal({ onClose, onCheckout, loadingPlanId }) {
       `}</style>
 
       <div className="mx-topbar">
-        <span className="mx-topbar-label">InHype Sanctuary — Memberships</span>
+        <span className="mx-topbar-label">InHype Sanctuary Memberships</span>
         <button className="mx-close" onClick={onClose} aria-label="Close">✕</button>
       </div>
 
@@ -590,216 +589,17 @@ function MembershipModal({ onClose, onCheckout, loadingPlanId }) {
   );
 }
 
-function PeptideVial3D({ rotationDeg }) {
-  const mountRef = useRef(null);
-  const ctxRef = useRef(null);
-
-  useEffect(() => {
-    const mount = mountRef.current;
-    if (!mount) return;
-
-    const width = mount.clientWidth || 260;
-    const height = mount.clientHeight || 420;
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 100);
-    camera.position.set(0, 0.15, 6.2);
-    camera.lookAt(0, 0, 0);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setSize(width, height);
-    if (THREE.SRGBColorSpace) renderer.outputColorSpace = THREE.SRGBColorSpace;
-    mount.appendChild(renderer.domElement);
-
-    scene.add(new THREE.AmbientLight(0xffffff, 0.35));
-    const key = new THREE.DirectionalLight(0xfff2d6, 1.5);
-    key.position.set(3, 5, 4);
-    scene.add(key);
-    const rim = new THREE.DirectionalLight(0xc9a84c, 1.2);
-    rim.position.set(-4, 2, -3);
-    scene.add(rim);
-    const fill = new THREE.DirectionalLight(0x4a7c6f, 0.55);
-    fill.position.set(-2, -1, 3);
-    scene.add(fill);
-
-    const group = new THREE.Group();
-    scene.add(group);
-
-    const bodyGeo = new THREE.CylinderGeometry(0.85, 0.85, 3.1, 48, 1, false);
-    const bodyMat = new THREE.MeshPhysicalMaterial({
-      color: 0xdfe8e2,
-      metalness: 0,
-      roughness: 0.06,
-      transmission: 0.92,
-      thickness: 0.6,
-      ior: 1.45,
-      clearcoat: 1,
-      clearcoatRoughness: 0.08,
-      transparent: true,
-      opacity: 0.55,
-    });
-    const body = new THREE.Mesh(bodyGeo, bodyMat);
-    group.add(body);
-
-    const liquidGeo = new THREE.CylinderGeometry(0.78, 0.78, 1.3, 48);
-    const liquidMat = new THREE.MeshPhysicalMaterial({
-      color: 0xe2c06a,
-      roughness: 0.2,
-      metalness: 0.05,
-      transmission: 0.4,
-      transparent: true,
-      opacity: 0.9,
-    });
-    const liquid = new THREE.Mesh(liquidGeo, liquidMat);
-    liquid.position.y = -0.75;
-    group.add(liquid);
-
-    const capGeo = new THREE.CylinderGeometry(0.9, 0.9, 0.62, 48);
-    const capMat = new THREE.MeshStandardMaterial({ color: 0xc9a84c, metalness: 0.9, roughness: 0.28 });
-    const cap = new THREE.Mesh(capGeo, capMat);
-    cap.position.y = 1.86;
-    group.add(cap);
-
-    const bandGeo = new THREE.CylinderGeometry(0.87, 0.87, 0.16, 48);
-    const bandMat = new THREE.MeshStandardMaterial({ color: 0x1c1c1a, roughness: 0.6, metalness: 0.15 });
-    const band = new THREE.Mesh(bandGeo, bandMat);
-    band.position.y = 1.47;
-    group.add(band);
-
-    function roundRect(c, x, y, w, h, r) {
-      c.beginPath();
-      c.moveTo(x + r, y);
-      c.arcTo(x + w, y, x + w, y + h, r);
-      c.arcTo(x + w, y + h, x, y + h, r);
-      c.arcTo(x, y + h, x, y, r);
-      c.arcTo(x, y, x + w, y, r);
-      c.closePath();
-    }
-
-    const labelCanvas = document.createElement('canvas');
-    labelCanvas.width = 256;
-    labelCanvas.height = 256;
-    const lctx = labelCanvas.getContext('2d');
-    const labelTexture = new THREE.CanvasTexture(labelCanvas);
-    if (THREE.SRGBColorSpace) labelTexture.colorSpace = THREE.SRGBColorSpace;
-
-    function paintLabel(logoImg) {
-      lctx.clearRect(0, 0, 256, 256);
-      lctx.fillStyle = '#f7f5f0';
-      roundRect(lctx, 8, 8, 240, 240, 22);
-      lctx.fill();
-      if (logoImg) {
-        lctx.save();
-        lctx.beginPath();
-        lctx.arc(128, 108, 58, 0, Math.PI * 2);
-        lctx.clip();
-        lctx.drawImage(logoImg, 70, 50, 116, 116);
-        lctx.restore();
-      }
-      lctx.fillStyle = '#0f1a17';
-      lctx.font = 'italic 20px "Cormorant Garamond", serif';
-      lctx.textAlign = 'center';
-      lctx.fillText('InHype Sanctuary', 128, 205);
-      labelTexture.needsUpdate = true;
-      renderer.render(scene, camera);
-    }
-    paintLabel(null);
-    const logoImg = new Image();
-    logoImg.crossOrigin = 'anonymous';
-    logoImg.onload = () => paintLabel(logoImg);
-    logoImg.src = '/logo.webp';
-
-    const labelGeo = new THREE.PlaneGeometry(1.35, 1.35);
-    const labelMat = new THREE.MeshBasicMaterial({ map: labelTexture, transparent: true });
-    const label = new THREE.Mesh(labelGeo, labelMat);
-    label.position.set(0, 0.1, 0.855);
-    group.add(label);
-    const labelBack = new THREE.Mesh(labelGeo, labelMat);
-    labelBack.position.set(0, 0.1, -0.855);
-    labelBack.rotation.y = Math.PI;
-    group.add(labelBack);
-
-    group.rotation.x = 0.08;
-    group.rotation.y = (rotationDeg * Math.PI) / 180;
-    renderer.render(scene, camera);
-
-    ctxRef.current = { scene, camera, renderer, group };
-
-    function handleResize() {
-      const w = mount.clientWidth, h = mount.clientHeight;
-      if (!w || !h) return;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-      renderer.render(scene, camera);
-    }
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      bodyGeo.dispose(); bodyMat.dispose();
-      liquidGeo.dispose(); liquidMat.dispose();
-      capGeo.dispose(); capMat.dispose();
-      bandGeo.dispose(); bandMat.dispose();
-      labelGeo.dispose(); labelMat.dispose(); labelTexture.dispose();
-      renderer.dispose();
-      if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    const c = ctxRef.current;
-    if (!c) return;
-    c.group.rotation.y = (rotationDeg * Math.PI) / 180;
-    c.renderer.render(c.scene, c.camera);
-  }, [rotationDeg]);
-
-  return <div ref={mountRef} className="bottle-canvas-mount" />;
-}
-
 export default function Home() {
   const [activeTab, setActiveTab]   = useState('injections');
   const [activeLaser, setActiveLaser] = useState(null);
   const [loading, setLoading]       = useState(null);
   const [navOpen, setNavOpen]       = useState(false);
   const [membershipOpen, setMembershipOpen] = useState(false);
-  const [bottleRotation, setBottleRotation] = useState(0);
-  const bottleRef = useRef(null);
 
   useEffect(() => {
     function onPopState() { setMembershipOpen(false); }
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
-  }, []);
-
-  useEffect(() => {
-    let ticking = false;
-    function computeRotation() {
-      const el = bottleRef.current;
-      if (!el) { ticking = false; return; }
-      const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight || document.documentElement.clientHeight;
-      const total = rect.height + vh;
-      const scrolled = vh - rect.top;
-      const progress = Math.min(1, Math.max(0, scrolled / total));
-      setBottleRotation(progress * 1440); // 4 full spins across the scroll-through
-      ticking = false;
-    }
-    function onScroll() {
-      if (!ticking) {
-        window.requestAnimationFrame(computeRotation);
-        ticking = true;
-      }
-    }
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    computeRotation();
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-    };
   }, []);
 
   function openMembership() {
@@ -889,14 +689,6 @@ export default function Home() {
         .marquee-track{display:flex;width:max-content;animation:marquee 32s linear infinite;}
         @keyframes marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 
-        /* PEPTIDE BOTTLE SHOWCASE */
-        .bottle-feature{background:var(--bg);display:flex;align-items:center;justify-content:center;min-height:80vh;padding:4rem 2rem;overflow:hidden;position:relative;}
-        .bottle-feature::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(201,168,76,0.1) 0%,transparent 70%);pointer-events:none;}
-        .bottle-wrap{width:280px;height:440px;filter:drop-shadow(0 30px 50px rgba(0,0,0,0.55));position:relative;z-index:1;}
-        .bottle-canvas-mount{width:100%;height:100%;}
-        .bottle-canvas-mount canvas{display:block;}
-        @media(max-width:960px){.bottle-wrap{width:220px;height:360px;}}
-        @media(max-width:600px){.bottle-wrap{width:180px;height:300px;} .bottle-feature{min-height:65vh;}}
         .marquee-item{display:flex;align-items:center;gap:1.5rem;padding:0 2.5rem;white-space:nowrap;font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(247,245,240,0.3);}
         .marquee-item::after{content:'✦';color:var(--gold);opacity:0.5;font-size:0.45rem;}
 
@@ -1157,13 +949,6 @@ export default function Home() {
               <span key={`${i}-${j}`} className="marquee-item">{item}</span>
             ))
           )}
-        </div>
-      </div>
-
-      {/* PEPTIDE BOTTLE SHOWCASE */}
-      <div className="bottle-feature" ref={bottleRef}>
-        <div className="bottle-wrap">
-          <PeptideVial3D rotationDeg={bottleRotation} />
         </div>
       </div>
 
