@@ -647,7 +647,7 @@ export default function Home() {
           --bg:#0f1a17;--card:#162018;--card2:#1c2a22;--teal:#1e3a2f;
           --gold:#c9a84c;--gold2:#e2c06a;--white:#f7f5f0;
           --text:rgba(247,245,240,0.55);--border:rgba(201,168,76,0.14);
-          --r:14px;
+          --r:16px;
         }
         html{scroll-behavior:smooth;}
         body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-weight:300;line-height:1.75;overflow-x:hidden;}
@@ -705,7 +705,8 @@ export default function Home() {
         .about-inner{max-width:760px;margin:0 auto;text-align:center;}
         .about-inner p{font-size:0.92rem;color:var(--text);line-height:1.95;margin-bottom:1rem;}
         .pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-top:3rem;}
-        .pil{background:rgba(0,0,0,0.15);border:1px solid rgba(201,168,76,0.1);border-radius:var(--r);padding:1.75rem 1.25rem;text-align:left;}
+        .pil{background:rgba(0,0,0,0.15);border:1px solid rgba(201,168,76,0.1);border-radius:var(--r);padding:1.75rem 1.25rem;text-align:left;transition:transform .25s,border-color .25s,box-shadow .25s;}
+        .pil:hover{transform:translateY(-4px);border-color:rgba(201,168,76,0.3);box-shadow:0 12px 30px rgba(0,0,0,0.35);}
         .pil-name{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--gold);margin-bottom:0.3rem;font-style:italic;}
         .pil-desc{font-size:0.74rem;color:rgba(247,245,240,0.3);line-height:1.65;}
 
@@ -719,8 +720,8 @@ export default function Home() {
         .mem-intro{display:grid;grid-template-columns:1.2fr 1fr;gap:4rem;align-items:end;margin-bottom:3.5rem;}
         .mem-intro p{font-size:0.9rem;color:var(--text);line-height:1.9;margin-top:0.75rem;}
         .mem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
-        .mc{background:var(--card2);padding:2.5rem 2rem;position:relative;border-radius:var(--r);border:1px solid rgba(255,255,255,0.05);transition:border-color .2s;}
-        .mc:hover{border-color:rgba(201,168,76,0.2);}
+        .mc{background:var(--card2);padding:2.5rem 2rem;position:relative;border-radius:var(--r);border:1px solid rgba(255,255,255,0.05);transition:transform .25s,border-color .25s,box-shadow .25s;}
+        .mc:hover{transform:translateY(-4px);border-color:rgba(201,168,76,0.3);box-shadow:0 12px 30px rgba(0,0,0,0.35);}
         .mc.feat{background:var(--gold);border:none;}
         .mc-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--bg);color:var(--gold);font-size:0.55rem;letter-spacing:0.14em;text-transform:uppercase;padding:4px 16px;font-weight:500;border-radius:0 0 8px 8px;white-space:nowrap;border:1px solid var(--border);border-top:none;}
         .mc-tier{font-size:0.55rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(247,245,240,0.2);margin-bottom:0.4rem;}
@@ -767,8 +768,8 @@ export default function Home() {
         .tab:hover{color:rgba(247,245,240,0.6);}
         .tab.on{color:var(--white);border-bottom-color:var(--gold);}
         .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;}
-        .card{background:var(--card);padding:2.25rem 2rem;transition:background .2s;border-radius:var(--r);border:1px solid rgba(255,255,255,0.04);}
-        .card:hover{background:var(--teal);}
+        .card{background:var(--card);padding:2.25rem 2rem;transition:transform .25s,border-color .25s,box-shadow .25s;border-radius:var(--r);border:1px solid rgba(255,255,255,0.04);}
+        .card:hover{transform:translateY(-4px);border-color:rgba(201,168,76,0.3);box-shadow:0 12px 30px rgba(0,0,0,0.35);}
         .card h3{font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:400;color:var(--white);margin-bottom:0.6rem;}
         .card p{font-size:0.78rem;color:var(--text);line-height:1.85;}
 
@@ -823,9 +824,11 @@ export default function Home() {
         .form-btn:hover{opacity:0.86;}
 
         /* FINAL CTA BANNER */
-        .final-banner{background:var(--card);text-align:center;padding:5rem 3rem;}
-        .final-banner-h{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,4vw,3rem);font-weight:300;color:var(--white);margin-bottom:2rem;}
-        .final-banner-h em{font-style:italic;color:var(--gold);}
+        .final-banner{background:var(--gold);text-align:center;padding:5rem 3rem;}
+        .final-banner-h{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,4vw,3rem);font-weight:300;color:var(--bg);margin-bottom:2rem;}
+        .final-banner-h em{font-style:italic;color:rgba(15,26,23,0.55);}
+        .final-banner .btn-primary{background:var(--bg);color:var(--gold);}
+        .final-banner .btn-primary:hover{opacity:0.85;}
 
         /* FOOTER */
         footer{background:var(--bg);border-top:1px solid rgba(255,255,255,0.05);padding:4rem 3rem 2.5rem;text-align:center;}
