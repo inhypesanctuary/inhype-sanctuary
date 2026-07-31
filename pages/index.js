@@ -589,12 +589,223 @@ function MembershipModal({ onClose, onCheckout, loadingPlanId }) {
   );
 }
 
+function CheckoutForm({ plan, onClose, onSuccess }) {
+  const [agreed, setAgreed]   = useState(false);
+  const [ready, setReady]     = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError]     = useState('');
+  const configuredRef = useRef(false);
+  // Mirrors `agreed` state so the CollectJS callback (configured once, closure
+  // captured at that time) always reads the current checkbox value, not a stale one.
+  const agreedRef = useRef(false);
+  useEffect(() => { agreedRef.current = agreed; }, [agreed]);
+  // Uncontrolled refs (not React state) so browser/Safari autofill — which sets
+  // input values directly in the DOM without always firing React's onChange —
+  // is still picked up correctly when we read values at submit time.
+  const firstNameRef = useRef(null);
+  const lastNameRef  = useRef(null);
+  const emailRef     = useRef(null);
+  const phoneRef     = useRef(null);
+  const address1Ref  = useRef(null);
+  const cityRef      = useRef(null);
+  const stateRef     = useRef(null);
+  const zipRef       = useRef(null);
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    function onKey(e) { if (e.key === 'Escape') onClose(); }
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [onClose]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    function configure() {
+      if (configuredRef.current) return;
+      if (typeof window === 'undefined' || !window.CollectJS) return;
+      configuredRef.current = true;
+
+      window.CollectJS.configure({
+        paymentSelector: '#co-submit-btn',
+        variant: 'inline',
+        styleSniffer: true,
+        fields: {
+          ccnumber: { selector: '#co-ccnumber', placeholder: 'Card number' },
+          ccexp:    { selector: '#co-ccexp',    placeholder: 'MM / YY' },
+          cvv:      { selector: '#co-cvv',      placeholder: 'CVV' },
+        },
+        validationCallback: function (field, status, message) {
+          if (!status && message) setError(message);
+        },
+        fieldsAvailableCallback: function () {
+          if (!cancelled) setReady(true);
+        },
+        timeoutCallback: function () {
+          if (!cancelled) {
+            setSubmitting(false);
+            setError('The card form timed out. Please try again.');
+          }
+        },
+        callback: async function (response) {
+          try {
+            const res = await fetch('/api/nmi-checkout', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                plan: plan.id,
+                token: response.token,
+                agreed: agreedRef.current,
+                firstName: firstNameRef.current?.value.trim() || '',
+                lastName:  lastNameRef.current?.value.trim() || '',
+                email:     emailRef.current?.value.trim() || '',
+                phone:     phoneRef.current?.value.trim() || '',
+                address1:  address1Ref.current?.value.trim() || '',
+                city:      cityRef.current?.value.trim() || '',
+                state:     stateRef.current?.value.trim() || '',
+                zip:       zipRef.current?.value.trim() || '',
+              }),
+            });
+            const data = await res.json();
+            if (data.success) {
+              onSuccess();
+            } else {
+              setError(data.message || 'Your card could not be processed. Please try again.');
+              setSubmitting(false);
+            }
+          } catch {
+            setError('Something went wrong. Please call us at (209) 330-0033.');
+            setSubmitting(false);
+          }
+        },
+      });
+    }
+
+    if (window.CollectJS) {
+      configure();
+    } else {
+      const script = document.getElementById('collectjs-script');
+      if (script) script.addEventListener('load', configure);
+    }
+
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plan.id]);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    setError('');
+    if (!agreed) {
+      setError('Please agree to the Commitment & Cancellation Policy and Medical Disclaimer to continue.');
+      return;
+    }
+    const firstName = firstNameRef.current?.value.trim();
+    const lastName  = lastNameRef.current?.value.trim();
+    const email     = emailRef.current?.value.trim();
+    if (!firstName || !lastName || !email) {
+      setError('Please fill in your name and email.');
+      return;
+    }
+    if (!ready || !window.CollectJS) {
+      setError('Payment form is still loading, please wait a moment and try again.');
+      return;
+    }
+    setSubmitting(true);
+    window.CollectJS.startPaymentRequest();
+  }
+
+  return (
+    <div className="co-overlay" role="dialog" aria-modal="true" aria-label={`Checkout — ${plan.name}`}>
+      <style>{`
+        .co-overlay{position:fixed;inset:0;z-index:600;background:rgba(15,26,23,0.85);backdrop-filter:blur(6px);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:2.5rem 1.25rem;-webkit-overflow-scrolling:touch;}
+        .co-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r,16px);max-width:520px;width:100%;padding:2.25rem 2rem 2rem;position:relative;}
+        .co-close{position:absolute;top:1.1rem;right:1.1rem;background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(247,245,240,0.6);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:0.95rem;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+        .co-close:hover{border-color:var(--gold);color:var(--gold);}
+        .co-eye{font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);opacity:0.8;margin-bottom:0.6rem;font-weight:500;}
+        .co-title{font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-style:italic;color:var(--white);margin-bottom:0.3rem;}
+        .co-price{font-size:0.85rem;color:var(--text);margin-bottom:1.75rem;}
+        .co-price strong{color:var(--gold);font-weight:500;}
+        .co-section-label{font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:rgba(247,245,240,0.35);margin:1.5rem 0 0.75rem;font-weight:500;}
+        .co-section-label:first-of-type{margin-top:0;}
+        .co-row{display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;margin-bottom:0.7rem;}
+        .co-row.co-row-3{grid-template-columns:1fr 0.7fr 0.7fr;}
+        .co-field{width:100%;}
+        input.co-input{width:100%;background:var(--bg);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:0.75rem 0.85rem;font-size:0.82rem;color:var(--white);font-family:'Inter',sans-serif;outline:none;transition:border-color .2s;}
+        input.co-input:focus{border-color:var(--gold);}
+        input.co-input::placeholder{color:rgba(247,245,240,0.3);}
+        .co-card-field{background:var(--bg);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:0.75rem 0.85rem;height:42px;transition:border-color .2s;}
+        .co-card-field iframe{width:100%!important;}
+        .co-agree{display:flex;align-items:flex-start;gap:0.6rem;margin:1.5rem 0 1.25rem;cursor:pointer;}
+        .co-agree input{margin-top:0.2rem;accent-color:var(--gold);cursor:pointer;flex-shrink:0;}
+        .co-agree span{font-size:0.74rem;color:var(--text);line-height:1.6;}
+        .co-error{background:rgba(201,90,76,0.1);border:1px solid rgba(201,90,76,0.3);color:#e08d7f;border-radius:8px;padding:0.7rem 0.9rem;font-size:0.75rem;margin-bottom:1.1rem;line-height:1.5;}
+        .co-submit{width:100%;background:var(--gold);color:var(--bg);border:none;border-radius:8px;padding:0.95rem;font-size:0.66rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:opacity .2s;}
+        .co-submit:hover{opacity:0.88;}
+        .co-submit:disabled{opacity:0.5;cursor:wait;}
+        .co-secure{text-align:center;font-size:0.65rem;color:rgba(247,245,240,0.3);margin-top:1rem;}
+        @media(max-width:480px){.co-row,.co-row.co-row-3{grid-template-columns:1fr;}}
+      `}</style>
+
+      <div className="co-card">
+        <button className="co-close" onClick={onClose} aria-label="Close checkout">✕</button>
+        <p className="co-eye">Secure checkout</p>
+        <h2 className="co-title">{plan.name}</h2>
+        <p className="co-price"><strong>{plan.price}/mo</strong> · {plan.commit}</p>
+
+        <form onSubmit={handleSubmit}>
+          <p className="co-section-label">Your information</p>
+          <div className="co-row">
+            <input ref={firstNameRef} className="co-input" placeholder="First name" defaultValue="" autoComplete="given-name" required />
+            <input ref={lastNameRef} className="co-input" placeholder="Last name" defaultValue="" autoComplete="family-name" required />
+          </div>
+          <div className="co-row">
+            <input ref={emailRef} className="co-input" type="email" placeholder="Email" defaultValue="" autoComplete="email" required />
+            <input ref={phoneRef} className="co-input" type="tel" placeholder="Phone" defaultValue="" autoComplete="tel" />
+          </div>
+          <div className="co-field" style={{marginBottom:'0.7rem'}}>
+            <input ref={address1Ref} className="co-input" placeholder="Billing address" defaultValue="" autoComplete="address-line1" />
+          </div>
+          <div className="co-row co-row-3">
+            <input ref={cityRef} className="co-input" placeholder="City" defaultValue="" autoComplete="address-level2" />
+            <input ref={stateRef} className="co-input" placeholder="State" defaultValue="" autoComplete="address-level1" />
+            <input ref={zipRef} className="co-input" placeholder="ZIP" defaultValue="" autoComplete="postal-code" />
+          </div>
+
+          <p className="co-section-label">Payment</p>
+          <div style={{marginBottom:'0.7rem'}}>
+            <div id="co-ccnumber" className="co-card-field" />
+          </div>
+          <div className="co-row">
+            <div id="co-ccexp" className="co-card-field" />
+            <div id="co-cvv" className="co-card-field" />
+          </div>
+
+          {error && <div className="co-error">{error}</div>}
+
+          <label className="co-agree">
+            <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} />
+            <span>I agree to the Commitment &amp; Cancellation Policy and Medical Disclaimer, including the 6-month membership term and monthly recurring billing until cancelled per policy.</span>
+          </label>
+
+          <button id="co-submit-btn" type="submit" className="co-submit" disabled={submitting || !agreed}>
+            {submitting ? 'Processing...' : `Confirm & Pay ${plan.price}/mo`}
+          </button>
+          <p className="co-secure">🔒 Payments processed securely. Your card details never touch our servers.</p>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [activeTab, setActiveTab]   = useState('injections');
   const [activeLaser, setActiveLaser] = useState(null);
-  const [loading, setLoading]       = useState(null);
   const [navOpen, setNavOpen]       = useState(false);
   const [membershipOpen, setMembershipOpen] = useState(false);
+  const [checkoutPlan, setCheckoutPlan] = useState(null);
 
   useEffect(() => {
     function onPopState() { setMembershipOpen(false); }
@@ -617,14 +828,9 @@ export default function Home() {
     }
   }
 
-  async function handleCheckout(planId) {
-    setLoading(planId);
-    try {
-      const res  = await fetch('/api/checkout', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: planId }) });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch { alert('Something went wrong. Please call us at (209) 330-0033'); }
-    setLoading(null);
+  function startCheckout(planId) {
+    const plan = DETAILED_PLANS.find(p => p.id === planId);
+    if (plan) setCheckoutPlan(plan);
   }
 
   function go(id) {
@@ -639,6 +845,12 @@ export default function Home() {
         <meta name="description" content="Medical spa in Glendale, CA — GLP therapy, LPG Endermologie, laser hair removal, and advanced aesthetics." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+        <script
+          id="collectjs-script"
+          src="https://secure.nmi.com/token/Collect.js"
+          data-tokenization-key={process.env.NEXT_PUBLIC_NMI_TOKENIZATION_KEY}
+          defer
+        />
       </Head>
 
       <style>{`
@@ -1135,8 +1347,16 @@ export default function Home() {
       {membershipOpen && (
         <MembershipModal
           onClose={closeMembership}
-          onCheckout={handleCheckout}
-          loadingPlanId={loading}
+          onCheckout={startCheckout}
+          loadingPlanId={null}
+        />
+      )}
+
+      {checkoutPlan && (
+        <CheckoutForm
+          plan={checkoutPlan}
+          onClose={() => setCheckoutPlan(null)}
+          onSuccess={() => { window.location.href = '/success'; }}
         />
       )}
     </>

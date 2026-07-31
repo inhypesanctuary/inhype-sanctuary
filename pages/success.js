@@ -32,9 +32,9 @@ export default function Success() {
           }}>
             <p style={{ color: '#c9a84c', fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Next Steps</p>
             <p style={{ color: 'rgba(247,245,240,0.6)', fontSize: '0.85rem', lineHeight: 1.8 }}>
-              1. Check your email for a confirmation receipt<br />
-              2. We'll call you to schedule your consultation<br />
-              3. Bloodwork → MD approval → treatment begins
+              1. Check your email for your membership confirmation<br />
+              2. Our care team will contact you within 24 hours to schedule your complimentary consultation<br />
+              3. Physician review, bloodwork, and MD approval precede the start of treatment
             </p>
           </div>
           <a href="tel:2093300033" style={{
