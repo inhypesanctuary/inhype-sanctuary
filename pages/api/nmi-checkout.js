@@ -2,6 +2,8 @@
 // Docs: https://support.nmi.com/hc/en-gb/articles/14525725002385-API-Recurring-Payments-and-Subscriptions
 //       https://docs.nmi.com/docs/quick-start-tutorial
 
+import { POLICY_VERSION, policyPlainText } from '../../lib/policyText';
+
 const PLAN_PRICES = {
   core: '399.00',
   plus: '499.00',
@@ -16,13 +18,17 @@ const PLAN_NAMES = {
 
 const NOTIFY_EMAIL = 'inhype.sanctuary@icloud.com';
 
-async function sendPurchaseNotification({ planName, amount, firstName, lastName, email, phone, address1, city, state, zip, subscriptionId, nextBillingDate, agreementRecord }) {
+async function sendPurchaseNotification({ planName, amount, firstName, lastName, email, phone, address1, city, state, zip, subscriptionId, nextBillingDate, agreementRecord, policySnapshot, agreedAt, customerIp }) {
   if (!process.env.RESEND_API_KEY) {
     console.warn('RESEND_API_KEY not set, skipping purchase notification email.');
     return;
   }
   const when = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles', dateStyle: 'medium', timeStyle: 'short' });
   const renewsOn = nextBillingDate.toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles', dateStyle: 'long' });
+  const policySnapshotHtml = (policySnapshot || '')
+    .split('\n')
+    .map(line => line.trim() === '' ? '<br/>' : line)
+    .join('<br/>');
   const html = `
     <div style="font-family:sans-serif;max-width:520px;margin:0 auto;">
       <h2 style="color:#0f1a17;">New Membership Purchase</h2>
@@ -37,10 +43,16 @@ async function sendPurchaseNotification({ planName, amount, firstName, lastName,
         <tr><td style="padding:4px 0;color:#666;">Subscription renews on</td><td><strong>${renewsOn}</strong>, then monthly on the same day</td></tr>
       </table>
       <div style="margin-top:1.25rem;background:#f5f0e0;border:1px solid #e0d3a0;border-radius:6px;padding:0.85rem 1rem;font-size:12.5px;color:#555;">
-        <strong style="color:#8a6d1a;">Policy agreement on record:</strong><br/>
+        <strong style="color:#8a6d1a;">Signed policy agreement on record:</strong><br/>
         ${agreementRecord}
+        <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid #e0d3a0;font-family:monospace;font-size:11.5px;line-height:1.6;color:#444;white-space:normal;">
+          ${policySnapshotHtml}
+        </div>
+        <div style="margin-top:0.75rem;padding-top:0.5rem;border-top:1px solid #e0d3a0;font-size:11px;color:#8a7a4a;">
+          Agreed at: ${agreedAt} (UTC) &nbsp;|&nbsp; IP address: ${customerIp}
+        </div>
       </div>
-      <p style="margin-top:1.5rem;font-size:12px;color:#999;">Full transaction and billing history is available in your Cashnet/NMI gateway dashboard.</p>
+      <p style="margin-top:1.5rem;font-size:12px;color:#999;">Full transaction and billing history is available in your Cashnet/NMI gateway dashboard. Keep this email — it is your record of proof that this member reviewed and agreed to the policy above at checkout.</p>
     </div>
   `;
   try {
@@ -114,7 +126,7 @@ export default async function handler(req, res) {
   }
 
   const {
-    plan, token, agreed,
+    plan, token, agreed, policyVersion,
     firstName, lastName, email, phone,
     address1, city, state, zip,
   } = req.body || {};
@@ -146,14 +158,20 @@ export default async function handler(req, res) {
 
   // Record proof of policy agreement — captured server-side (not just trusted from
   // the client) with timestamp + IP, so there's a durable record if a member disputes
-  // the 6-month commitment or an early cancellation later.
+  // the 6-month commitment or an early cancellation later. The policy text itself
+  // always comes from lib/policyText.js (the server's own copy, never the client's),
+  // so the "signed" text can never be tampered with in the browser.
   const agreedAt = today.toISOString();
   const forwardedFor = req.headers['x-forwarded-for'];
   const customerIp = (Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor)?.split(',')[0]?.trim()
     || req.socket?.remoteAddress
     || 'unknown';
-  const agreementRecord = `Agreed to Commitment &amp; Cancellation Policy and Medical Disclaimer at checkout on ${agreedAt} (UTC) from IP ${customerIp}.`;
-  const orderDescription = `Policy agreed at ${agreedAt} UTC, IP ${customerIp}`;
+  if (policyVersion && policyVersion !== POLICY_VERSION) {
+    console.warn(`Policy version mismatch: client sent ${policyVersion}, server is on ${POLICY_VERSION}`);
+  }
+  const agreementRecord = `Agreed to Commitment &amp; Cancellation Policy and Medical Disclaimer (version ${POLICY_VERSION}) at checkout on ${agreedAt} (UTC) from IP ${customerIp}.`;
+  const orderDescription = `Policy v${POLICY_VERSION} agreed ${agreedAt} UTC IP ${customerIp}`;
+  const policySnapshot = policyPlainText();
 
   const params = new URLSearchParams({
     security_key: process.env.NMI_SECURITY_KEY,
@@ -196,6 +214,9 @@ export default async function handler(req, res) {
           subscriptionId,
           nextBillingDate,
           agreementRecord,
+          policySnapshot,
+          agreedAt,
+          customerIp,
         }),
         sendCustomerConfirmation({
           planName: PLAN_NAMES[plan],
