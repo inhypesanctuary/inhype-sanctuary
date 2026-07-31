@@ -20,11 +20,11 @@ export default function Success() {
             fontWeight: 300, color: '#f7f5f0', fontStyle: 'italic',
             marginBottom: '1rem', lineHeight: 1.15
           }}>
-            Welcome to the Sanctuary
+            Welcome to Your Sanctuary
           </h1>
           <p style={{ color: 'rgba(247,245,240,0.5)', fontSize: '0.95rem', lineHeight: 1.9, marginBottom: '2.5rem' }}>
-            Your membership has been confirmed. Our team will reach out within 24 hours
-            to schedule your complimentary consultation and begin your transformation journey.
+            Your membership has been confirmed. The next step is scheduling your appointment
+            so your transformation journey can begin.
           </p>
           <div style={{
             background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)',
@@ -33,15 +33,24 @@ export default function Success() {
             <p style={{ color: '#c9a84c', fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Next Steps</p>
             <p style={{ color: 'rgba(247,245,240,0.6)', fontSize: '0.85rem', lineHeight: 1.8 }}>
               1. Check your email for your membership confirmation<br />
-              2. Our care team will contact you within 24 hours to schedule your complimentary consultation<br />
-              3. Physician review, bloodwork, and MD approval precede the start of treatment
+              2. Book your appointment below, or call us and we'll schedule it for you<br />
+              3. Your provider will see you and begin your treatment
             </p>
           </div>
-          <a href="tel:2093300033" style={{
+          <a href="https://www.vagaro.com/httpswwwvagarocomlpglosangeles/book-now" target="_blank" rel="noreferrer" style={{
             display: 'inline-block', background: '#c9a84c', color: '#0f1a17',
             padding: '0.9rem 2.5rem', borderRadius: '5px', textDecoration: 'none',
             fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase',
-            fontWeight: 500, marginRight: '1rem'
+            fontWeight: 500, marginRight: '1rem', marginBottom: '1rem'
+          }}>
+            Book Your Appointment
+          </a>
+          <a href="tel:2093300033" style={{
+            display: 'inline-block', background: 'transparent', color: '#c9a84c',
+            border: '1px solid rgba(201,168,76,0.4)',
+            padding: '0.9rem 2.5rem', borderRadius: '5px', textDecoration: 'none',
+            fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+            fontWeight: 500, marginRight: '1rem', marginBottom: '1rem'
           }}>
             Call Us Now
           </a>
