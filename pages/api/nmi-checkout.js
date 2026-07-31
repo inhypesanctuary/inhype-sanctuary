@@ -3,6 +3,32 @@
 //       https://docs.nmi.com/docs/quick-start-tutorial
 
 import { POLICY_VERSION, policyPlainText } from '../../lib/policyText';
+import { put } from '@vercel/blob';
+
+// Writes a durable, private, per-purchase proof-of-agreement record to Vercel
+// Blob storage. This is a second, independent copy of the same record that's
+// emailed to staff (Section: sendPurchaseNotification) — so proof of a given
+// member's agreement survives even if a notification email is lost, deleted,
+// or never arrives. Wrapped so a storage failure can never block or fail the
+// underlying payment; if it errors, checkout still succeeds and the email
+// record remains the fallback.
+async function storeAgreementRecord(record) {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    console.warn('BLOB_READ_WRITE_TOKEN not set, skipping durable agreement record.');
+    return;
+  }
+  try {
+    const safeEmail = (record.email || 'unknown').replace(/[^a-zA-Z0-9@._-]/g, '_');
+    const key = `agreements/${record.agreedAt}_${record.subscriptionId || 'no-sub'}_${safeEmail}.json`;
+    await put(key, JSON.stringify(record, null, 2), {
+      access: 'private',
+      contentType: 'application/json',
+      addRandomSuffix: false,
+    });
+  } catch (err) {
+    console.error('Failed to store durable agreement record in Blob storage:', err);
+  }
+}
 
 const PLAN_PRICES = {
   core: '399.00',
@@ -224,6 +250,17 @@ export default async function handler(req, res) {
           firstName,
           email,
           nextBillingDate,
+        }),
+        storeAgreementRecord({
+          firstName, lastName, email, phone, address1, city, state, zip,
+          plan,
+          planName: PLAN_NAMES[plan],
+          amount,
+          subscriptionId,
+          policyVersion: POLICY_VERSION,
+          agreedAt,
+          customerIp,
+          policyFullText: policySnapshot,
         }),
       ]);
 
