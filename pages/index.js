@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import { useState, useEffect, useRef } from 'react';
-import { POLICY_VERSION, COMMITMENT_ITEMS, MEDICAL_DISCLAIMER } from '../lib/policyText';
+import { POLICY_VERSION, AGREEMENT_LABEL, AGREEMENT_LINK_TEXT, POLICY_TITLE, POLICY_SECTIONS } from '../lib/policyText';
 
 const PLANS = [
   {
@@ -590,11 +590,58 @@ function MembershipModal({ onClose, onCheckout, loadingPlanId }) {
   );
 }
 
+function FullPolicyModal({ onClose }) {
+  useEffect(() => {
+    function onKey(e) { if (e.key === 'Escape') onClose(); }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div className="fp-overlay" role="dialog" aria-modal="true" aria-label="Full Membership Policy & Informed Consent">
+      <style>{`
+        .fp-overlay{position:fixed;inset:0;z-index:700;background:rgba(8,14,12,0.92);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:2.5rem 1.25rem;-webkit-overflow-scrolling:touch;}
+        .fp-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r,16px);max-width:640px;width:100%;padding:2.25rem 2rem 2.5rem;position:relative;}
+        .fp-close{position:absolute;top:1.1rem;right:1.1rem;background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(247,245,240,0.6);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:0.95rem;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+        .fp-close:hover{border-color:var(--gold);color:var(--gold);}
+        .fp-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-style:italic;color:var(--white);margin-bottom:0.3rem;padding-right:2.5rem;}
+        .fp-version{font-size:0.62rem;color:rgba(247,245,240,0.3);margin-bottom:1.5rem;}
+        .fp-section{margin-bottom:1.5rem;}
+        .fp-section h4{font-size:0.68rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--gold);margin-bottom:0.6rem;font-weight:600;}
+        .fp-section p{font-size:0.78rem;color:rgba(247,245,240,0.6);line-height:1.75;margin-bottom:0.6rem;}
+        .fp-section ul{margin:0 0 0.6rem 1.1rem;padding:0;}
+        .fp-section li{font-size:0.78rem;color:rgba(247,245,240,0.6);line-height:1.75;margin-bottom:0.5rem;}
+        .fp-footer-btn{width:100%;background:var(--gold);color:var(--bg);border:none;border-radius:8px;padding:0.85rem;font-size:0.64rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:opacity .2s;margin-top:0.5rem;}
+        .fp-footer-btn:hover{opacity:0.88;}
+      `}</style>
+      <div className="fp-card">
+        <button className="fp-close" onClick={onClose} aria-label="Close">✕</button>
+        <h2 className="fp-title">{POLICY_TITLE}</h2>
+        <p className="fp-version">Policy version {POLICY_VERSION}</p>
+        {POLICY_SECTIONS.map((section, i) => (
+          <div className="fp-section" key={i}>
+            <h4>{section.heading}</h4>
+            {section.blocks.map((block, j) => (
+              block.type === 'list' ? (
+                <ul key={j}>{block.items.map((item, k) => <li key={k}>{item}</li>)}</ul>
+              ) : (
+                <p key={j}>{block.text}</p>
+              )
+            ))}
+          </div>
+        ))}
+        <button className="fp-footer-btn" onClick={onClose}>Close</button>
+      </div>
+    </div>
+  );
+}
+
 function CheckoutForm({ plan, onClose, onSuccess }) {
   const [agreed, setAgreed]   = useState(false);
   const [ready, setReady]     = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]     = useState('');
+  const [showFullPolicy, setShowFullPolicy] = useState(false);
   const configuredRef = useRef(false);
   // Mirrors `agreed` state so the CollectJS callback (configured once, closure
   // captured at that time) always reads the current checkbox value, not a stale one.
@@ -740,13 +787,9 @@ function CheckoutForm({ plan, onClose, onSuccess }) {
         input.co-input::placeholder{color:rgba(247,245,240,0.3);}
         .co-card-field{background:var(--bg);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:0.75rem 0.85rem;height:42px;transition:border-color .2s;}
         .co-card-field iframe{width:100%!important;}
-        .co-terms-box{background:var(--bg);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:1rem 1.1rem;max-height:180px;overflow-y:auto;margin-top:1.25rem;}
-        .co-terms-box h4{font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.6rem;font-weight:600;}
-        .co-terms-box ol{margin:0 0 0.9rem 1.1rem;padding:0;}
-        .co-terms-box li{font-size:0.72rem;color:rgba(247,245,240,0.55);line-height:1.6;margin-bottom:0.35rem;}
-        .co-terms-box p{font-size:0.72rem;color:rgba(247,245,240,0.55);line-height:1.6;}
-        .co-terms-version{font-size:0.62rem;color:rgba(247,245,240,0.25);margin-top:0.75rem;}
-        .co-agree{display:flex;align-items:flex-start;gap:0.6rem;margin:1rem 0 1.25rem;cursor:pointer;}
+        .co-policy-link{display:block;background:none;border:none;padding:0;margin-top:1.25rem;font-size:0.72rem;color:var(--gold);text-decoration:underline;text-underline-offset:2px;cursor:pointer;font-family:'Inter',sans-serif;text-align:left;}
+        .co-policy-link:hover{opacity:0.8;}
+        .co-agree{display:flex;align-items:flex-start;gap:0.6rem;margin:0.6rem 0 1.25rem;cursor:pointer;}
         .co-agree input{margin-top:0.2rem;accent-color:var(--gold);cursor:pointer;flex-shrink:0;}
         .co-agree span{font-size:0.74rem;color:var(--text);line-height:1.6;}
         .co-error{background:rgba(201,90,76,0.1);border:1px solid rgba(201,90,76,0.3);color:#e08d7f;border-radius:8px;padding:0.7rem 0.9rem;font-size:0.75rem;margin-bottom:1.1rem;line-height:1.5;}
@@ -793,19 +836,13 @@ function CheckoutForm({ plan, onClose, onSuccess }) {
 
           {error && <div className="co-error">{error}</div>}
 
-          <div className="co-terms-box">
-            <h4>Commitment &amp; Cancellation Policy</h4>
-            <ol>
-              {COMMITMENT_ITEMS.map((item, i) => <li key={i}>{item}</li>)}
-            </ol>
-            <h4>Medical Disclaimer</h4>
-            <p>{MEDICAL_DISCLAIMER}</p>
-            <p className="co-terms-version">Policy version {POLICY_VERSION}</p>
-          </div>
+          <button type="button" className="co-policy-link" onClick={() => setShowFullPolicy(true)}>
+            {AGREEMENT_LINK_TEXT}
+          </button>
 
           <label className="co-agree">
             <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} />
-            <span>I have read and agree to the Commitment &amp; Cancellation Policy and Medical Disclaimer above, including the 6-month membership term and monthly recurring billing until cancelled per policy.</span>
+            <span>{AGREEMENT_LABEL}</span>
           </label>
 
           <button id="co-submit-btn" type="submit" className="co-submit" disabled={submitting || !agreed}>
@@ -814,6 +851,7 @@ function CheckoutForm({ plan, onClose, onSuccess }) {
           <p className="co-secure">🔒 Payments processed securely. Your card details never touch our servers.</p>
         </form>
       </div>
+      {showFullPolicy && <FullPolicyModal onClose={() => setShowFullPolicy(false)} />}
     </div>
   );
 }
