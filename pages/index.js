@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import { useState, useEffect, useRef } from 'react';
+import * as THREE from 'three';
 
 const PLANS = [
   {
@@ -589,6 +590,175 @@ function MembershipModal({ onClose, onCheckout, loadingPlanId }) {
   );
 }
 
+function PeptideVial3D({ rotationDeg }) {
+  const mountRef = useRef(null);
+  const ctxRef = useRef(null);
+
+  useEffect(() => {
+    const mount = mountRef.current;
+    if (!mount) return;
+
+    const width = mount.clientWidth || 260;
+    const height = mount.clientHeight || 420;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 100);
+    camera.position.set(0, 0.15, 6.2);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(width, height);
+    if (THREE.SRGBColorSpace) renderer.outputColorSpace = THREE.SRGBColorSpace;
+    mount.appendChild(renderer.domElement);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+    const key = new THREE.DirectionalLight(0xfff2d6, 1.5);
+    key.position.set(3, 5, 4);
+    scene.add(key);
+    const rim = new THREE.DirectionalLight(0xc9a84c, 1.2);
+    rim.position.set(-4, 2, -3);
+    scene.add(rim);
+    const fill = new THREE.DirectionalLight(0x4a7c6f, 0.55);
+    fill.position.set(-2, -1, 3);
+    scene.add(fill);
+
+    const group = new THREE.Group();
+    scene.add(group);
+
+    const bodyGeo = new THREE.CylinderGeometry(0.85, 0.85, 3.1, 48, 1, false);
+    const bodyMat = new THREE.MeshPhysicalMaterial({
+      color: 0xdfe8e2,
+      metalness: 0,
+      roughness: 0.06,
+      transmission: 0.92,
+      thickness: 0.6,
+      ior: 1.45,
+      clearcoat: 1,
+      clearcoatRoughness: 0.08,
+      transparent: true,
+      opacity: 0.55,
+    });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    group.add(body);
+
+    const liquidGeo = new THREE.CylinderGeometry(0.78, 0.78, 1.3, 48);
+    const liquidMat = new THREE.MeshPhysicalMaterial({
+      color: 0xe2c06a,
+      roughness: 0.2,
+      metalness: 0.05,
+      transmission: 0.4,
+      transparent: true,
+      opacity: 0.9,
+    });
+    const liquid = new THREE.Mesh(liquidGeo, liquidMat);
+    liquid.position.y = -0.75;
+    group.add(liquid);
+
+    const capGeo = new THREE.CylinderGeometry(0.9, 0.9, 0.62, 48);
+    const capMat = new THREE.MeshStandardMaterial({ color: 0xc9a84c, metalness: 0.9, roughness: 0.28 });
+    const cap = new THREE.Mesh(capGeo, capMat);
+    cap.position.y = 1.86;
+    group.add(cap);
+
+    const bandGeo = new THREE.CylinderGeometry(0.87, 0.87, 0.16, 48);
+    const bandMat = new THREE.MeshStandardMaterial({ color: 0x1c1c1a, roughness: 0.6, metalness: 0.15 });
+    const band = new THREE.Mesh(bandGeo, bandMat);
+    band.position.y = 1.47;
+    group.add(band);
+
+    function roundRect(c, x, y, w, h, r) {
+      c.beginPath();
+      c.moveTo(x + r, y);
+      c.arcTo(x + w, y, x + w, y + h, r);
+      c.arcTo(x + w, y + h, x, y + h, r);
+      c.arcTo(x, y + h, x, y, r);
+      c.arcTo(x, y, x + w, y, r);
+      c.closePath();
+    }
+
+    const labelCanvas = document.createElement('canvas');
+    labelCanvas.width = 256;
+    labelCanvas.height = 256;
+    const lctx = labelCanvas.getContext('2d');
+    const labelTexture = new THREE.CanvasTexture(labelCanvas);
+    if (THREE.SRGBColorSpace) labelTexture.colorSpace = THREE.SRGBColorSpace;
+
+    function paintLabel(logoImg) {
+      lctx.clearRect(0, 0, 256, 256);
+      lctx.fillStyle = '#f7f5f0';
+      roundRect(lctx, 8, 8, 240, 240, 22);
+      lctx.fill();
+      if (logoImg) {
+        lctx.save();
+        lctx.beginPath();
+        lctx.arc(128, 108, 58, 0, Math.PI * 2);
+        lctx.clip();
+        lctx.drawImage(logoImg, 70, 50, 116, 116);
+        lctx.restore();
+      }
+      lctx.fillStyle = '#0f1a17';
+      lctx.font = 'italic 20px "Cormorant Garamond", serif';
+      lctx.textAlign = 'center';
+      lctx.fillText('InHype Sanctuary', 128, 205);
+      labelTexture.needsUpdate = true;
+      renderer.render(scene, camera);
+    }
+    paintLabel(null);
+    const logoImg = new Image();
+    logoImg.crossOrigin = 'anonymous';
+    logoImg.onload = () => paintLabel(logoImg);
+    logoImg.src = '/logo.webp';
+
+    const labelGeo = new THREE.PlaneGeometry(1.35, 1.35);
+    const labelMat = new THREE.MeshBasicMaterial({ map: labelTexture, transparent: true });
+    const label = new THREE.Mesh(labelGeo, labelMat);
+    label.position.set(0, 0.1, 0.855);
+    group.add(label);
+    const labelBack = new THREE.Mesh(labelGeo, labelMat);
+    labelBack.position.set(0, 0.1, -0.855);
+    labelBack.rotation.y = Math.PI;
+    group.add(labelBack);
+
+    group.rotation.x = 0.08;
+    group.rotation.y = (rotationDeg * Math.PI) / 180;
+    renderer.render(scene, camera);
+
+    ctxRef.current = { scene, camera, renderer, group };
+
+    function handleResize() {
+      const w = mount.clientWidth, h = mount.clientHeight;
+      if (!w || !h) return;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+      renderer.render(scene, camera);
+    }
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      bodyGeo.dispose(); bodyMat.dispose();
+      liquidGeo.dispose(); liquidMat.dispose();
+      capGeo.dispose(); capMat.dispose();
+      bandGeo.dispose(); bandMat.dispose();
+      labelGeo.dispose(); labelMat.dispose(); labelTexture.dispose();
+      renderer.dispose();
+      if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const c = ctxRef.current;
+    if (!c) return;
+    c.group.rotation.y = (rotationDeg * Math.PI) / 180;
+    c.renderer.render(c.scene, c.camera);
+  }, [rotationDeg]);
+
+  return <div ref={mountRef} className="bottle-canvas-mount" />;
+}
+
 export default function Home() {
   const [activeTab, setActiveTab]   = useState('injections');
   const [activeLaser, setActiveLaser] = useState(null);
@@ -721,12 +891,12 @@ export default function Home() {
 
         /* PEPTIDE BOTTLE SHOWCASE */
         .bottle-feature{background:var(--bg);display:flex;align-items:center;justify-content:center;min-height:80vh;padding:4rem 2rem;overflow:hidden;position:relative;}
-        .bottle-feature::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(201,168,76,0.08) 0%,transparent 70%);pointer-events:none;}
-        .bottle-wrap{width:220px;filter:drop-shadow(0 25px 45px rgba(0,0,0,0.5));will-change:transform;position:relative;z-index:1;}
-        .bottle-wrap svg{width:100%;height:auto;display:block;}
-        @media(max-width:960px){.bottle-wrap{width:170px;}}
-        @media(max-width:600px){.bottle-wrap{width:140px;} .bottle-feature{min-height:65vh;}}
-        @media(prefers-reduced-motion:reduce){.bottle-wrap{transform:none !important;}}
+        .bottle-feature::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(201,168,76,0.1) 0%,transparent 70%);pointer-events:none;}
+        .bottle-wrap{width:280px;height:440px;filter:drop-shadow(0 30px 50px rgba(0,0,0,0.55));position:relative;z-index:1;}
+        .bottle-canvas-mount{width:100%;height:100%;}
+        .bottle-canvas-mount canvas{display:block;}
+        @media(max-width:960px){.bottle-wrap{width:220px;height:360px;}}
+        @media(max-width:600px){.bottle-wrap{width:180px;height:300px;} .bottle-feature{min-height:65vh;}}
         .marquee-item{display:flex;align-items:center;gap:1.5rem;padding:0 2.5rem;white-space:nowrap;font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(247,245,240,0.3);}
         .marquee-item::after{content:'✦';color:var(--gold);opacity:0.5;font-size:0.45rem;}
 
@@ -992,55 +1162,8 @@ export default function Home() {
 
       {/* PEPTIDE BOTTLE SHOWCASE */}
       <div className="bottle-feature" ref={bottleRef}>
-        <div className="bottle-wrap" style={{ transform: `rotate(${bottleRotation}deg)` }}>
-          <svg viewBox="0 0 200 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="InHype Sanctuary peptide vial">
-            <defs>
-              <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="rgba(226,192,106,0.14)" />
-                <stop offset="45%" stopColor="rgba(247,245,240,0.2)" />
-                <stop offset="100%" stopColor="rgba(15,26,23,0.4)" />
-              </linearGradient>
-              <linearGradient id="liquidGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#e2c06a" />
-                <stop offset="100%" stopColor="#a9822f" />
-              </linearGradient>
-              <clipPath id="vialClip">
-                <rect x="30" y="84" width="140" height="300" rx="18" />
-              </clipPath>
-              <clipPath id="logoClip">
-                <circle cx="100" cy="250" r="42" />
-              </clipPath>
-            </defs>
-
-            {/* cap */}
-            <rect x="45" y="12" width="110" height="56" rx="10" fill="#c9a84c" />
-            {[0,1,2,3,4,5,6].map(i => (
-              <rect key={i} x={52 + i * 14} y="12" width="3" height="56" fill="rgba(15,26,23,0.15)" />
-            ))}
-            {/* stopper band */}
-            <rect x="45" y="68" width="110" height="18" fill="#2a2a28" />
-
-            {/* vial body */}
-            <rect x="30" y="84" width="140" height="300" rx="18" fill="url(#glassGrad)" stroke="rgba(201,168,76,0.45)" strokeWidth="2" />
-
-            {/* liquid */}
-            <g clipPath="url(#vialClip)">
-              <rect x="30" y="220" width="140" height="164" fill="url(#liquidGrad)" opacity="0.85" />
-            </g>
-
-            {/* glass sheen */}
-            <rect x="46" y="96" width="10" height="276" rx="5" fill="rgba(255,255,255,0.18)" />
-
-            {/* label */}
-            <rect x="42" y="196" width="116" height="108" rx="10" fill="#f7f5f0" opacity="0.96" />
-            <g clipPath="url(#logoClip)">
-              <image href="/logo.webp" x="58" y="208" width="84" height="84" preserveAspectRatio="xMidYMid slice" />
-            </g>
-            <text x="100" y="288" textAnchor="middle" fontFamily="'Cormorant Garamond', serif" fontStyle="italic" fontSize="11" fill="#0f1a17">InHype Sanctuary</text>
-
-            {/* bottom rim shadow */}
-            <ellipse cx="100" cy="384" rx="70" ry="8" fill="rgba(0,0,0,0.25)" />
-          </svg>
+        <div className="bottle-wrap">
+          <PeptideVial3D rotationDeg={bottleRotation} />
         </div>
       </div>
 
