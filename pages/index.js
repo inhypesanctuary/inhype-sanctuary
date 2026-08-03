@@ -24,7 +24,7 @@ const PLANS = [
     tier: 'Plan 2',
     name: 'Sanctuary Plus',
     tag: 'Advanced dual or triple agonist therapy with LPG body contouring.',
-    price: '$499',
+    price: '$599',
     commit: '6-month commitment · Upgrade to Elite anytime',
     pick: 'Pick this if you want to lose weight meaningfully while contouring and tightening your body.',
     features: [
@@ -106,7 +106,7 @@ const DETAILED_PLANS = [
     tier: 'Plan 2',
     name: 'Sanctuary Plus',
     tagline: 'Advanced dual or triple agonist therapy with LPG body contouring, for those ready to go further, faster.',
-    price: '$499',
+    price: '$599',
     commit: '6-month commitment · Upgrade to Elite anytime',
     groups: [
       { label: 'GLP Therapy', items: [
@@ -494,7 +494,7 @@ function MembershipModal({ onClose, onCheckout, loadingPlanId }) {
                 <tr>
                   <th></th>
                   <th><span className="mx-col-name">Core</span><br/>$399/mo</th>
-                  <th className="mx-hl"><span className="mx-col-name">Plus ✦</span><br/>$499/mo</th>
+                  <th className="mx-hl"><span className="mx-col-name">Plus ✦</span><br/>$599/mo</th>
                   <th><span className="mx-col-name">Elite</span><br/>$899/mo</th>
                 </tr>
               </thead>

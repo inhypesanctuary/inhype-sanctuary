@@ -32,7 +32,7 @@ async function storeAgreementRecord(record) {
 
 const PLAN_PRICES = {
   core: '399.00',
-  plus: '499.00',
+  plus: '599.00',
   elite: '899.00',
 };
 
