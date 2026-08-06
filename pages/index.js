@@ -188,7 +188,7 @@ const COMPARE_ROWS = [
 ];
 
 const MODAL_FAQ = [
-  { q: 'What is the difference between Tirzepatide and Retatrutide?', a: 'Tirzepatide (Mounjaro) is a dual agonist, it activates GLP-1 and GIP receptors. Retatrutide is a triple agonist, it activates GLP-1, GIP, and GLP-2. The additional GLP-2 receptor activation supports gut health and leads to greater fat loss. Both are effective. Retatrutide is the more advanced option, available to Plus and Elite members.' },
+  { q: 'What is the difference between Tirzepatide and Retatrutide?', a: 'Tirzepatide (Mounjaro) is a dual agonist, it activates GLP-1 and GIP receptors. Retatrutide is a triple agonist, it activates GLP-1, GIP, and Glucagon. The additional Glucagon receptor activation supports gut health and leads to greater fat loss. Both are effective. Retatrutide is the more advanced option, available to Plus and Elite members.' },
   { q: 'Will I have loose skin after losing weight?', a: 'Rapid weight loss can cause loose skin. This is one of the main reasons Sanctuary Elite includes 4 LPG Endermologie sessions per month, weekly mechanical stimulation of the skin helps maintain elasticity and tightness as the weight comes off, significantly reducing this risk compared to GLP therapy alone.' },
   { q: 'Does GLP therapy cause hair loss?', a: 'Hair loss (telogen effluvium) can occur with rapid weight loss, it is a known side effect of significant caloric reduction, not the GLP medication itself. Sanctuary Elite addresses this on two levels: NAD+ injections support cellular repair and energy metabolism, and Elite members receive a discount on targeted peptides, specifically GHK-CU and Glow 70, which are clinically used to support hair follicle health and stimulate regrowth during and after significant weight loss.' },
   { q: 'Who oversees my treatment?', a: 'Every InHype Sanctuary membership includes oversight by a licensed MD physician. Physician monitors your protocol, adjusts your dose at every visit, and ensures your treatment is safe and effective throughout the 6-month commitment.' },
@@ -410,11 +410,11 @@ function MembershipModal({ onClose, onCheckout, loadingPlanId }) {
               </div>
               <p className="mx-glp-desc">Retatrutide activates all three metabolic receptors. Unlike dual agonists, it has demonstrated a superior ability to preserve lean muscle mass during weight loss, resulting in a leaner, firmer physique and significantly less loose skin.</p>
               <ul className="mx-glp-list">
-                <li>Triple receptor, GLP-1 + GIP + GLP-2</li>
+                <li>Triple receptor, GLP-1 + GIP + Glucagon</li>
                 <li>Preferentially burns fat while preserving lean muscle</li>
                 <li>Less loose skin, muscle preservation keeps the body firm</li>
                 <li>Superior fat loss outcomes vs dual agonists in clinical data</li>
-                <li>Reduces inflammation and supports gut health via GLP-2</li>
+                <li>Reduces inflammation and supports gut health via Glucagon</li>
                 <li>Available at any therapeutic dose, no ceiling</li>
                 <li>Exclusive to Plus &amp; Elite members</li>
               </ul>
