@@ -44,17 +44,13 @@ const PLAN_NAMES = {
 
 const NOTIFY_EMAIL = 'inhype.sanctuary@icloud.com';
 
-async function sendPurchaseNotification({ planName, amount, firstName, lastName, email, phone, address1, city, state, zip, subscriptionId, nextBillingDate, agreementRecord, policySnapshot, agreedAt, customerIp }) {
+async function sendPurchaseNotification({ planName, amount, firstName, lastName, email, phone, address1, city, state, zip, subscriptionId, nextBillingDate, agreementRecord,  agreedAt, customerIp }) {
   if (!process.env.RESEND_API_KEY) {
     console.warn('RESEND_API_KEY not set, skipping purchase notification email.');
     return;
   }
   const when = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles', dateStyle: 'medium', timeStyle: 'short' });
   const renewsOn = nextBillingDate.toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles', dateStyle: 'long' });
-  const policySnapshotHtml = (policySnapshot || '')
-    .split('\n')
-    .map(line => line.trim() === '' ? '<br/>' : line)
-    .join('<br/>');
   const html = `
     <div style="font-family:sans-serif;max-width:520px;margin:0 auto;">
       <h2 style="color:#0f1a17;">New Membership Purchase</h2>
@@ -71,13 +67,9 @@ async function sendPurchaseNotification({ planName, amount, firstName, lastName,
       <div style="margin-top:1.25rem;background:#f5f0e0;border:1px solid #e0d3a0;border-radius:6px;padding:0.85rem 1rem;font-size:12.5px;color:#555;">
         <strong style="color:#8a6d1a;">Signed policy agreement on record:</strong><br/>
         ${agreementRecord}
-        <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid #e0d3a0;font-family:monospace;font-size:11.5px;line-height:1.6;color:#444;white-space:normal;">
-          ${policySnapshotHtml}
-        </div>
-        <div style="margin-top:0.75rem;padding-top:0.5rem;border-top:1px solid #e0d3a0;font-size:11px;color:#8a7a4a;">
-          Agreed at: ${agreedAt} (UTC) &nbsp;|&nbsp; IP address: ${customerIp}
-        </div>
-      </div>
+    <p style="margin:0.6rem 0 0;">
+              <a href="https://www.inhypesanctuary.com/" style="color:#8a6d1a;text-decoration:underline;">View Membership Policy &amp; Informed Consent &rarr;</a>
+                      </p></div>
       <p style="margin-top:1.5rem;font-size:12px;color:#999;">Full transaction and billing history is available in your Cashnet/NMI gateway dashboard. Keep this email — it is your record of proof that this member reviewed and agreed to the policy above at checkout.</p>
     </div>
   `;
@@ -240,7 +232,6 @@ export default async function handler(req, res) {
           subscriptionId,
           nextBillingDate,
           agreementRecord,
-          policySnapshot,
           agreedAt,
           customerIp,
         }),
