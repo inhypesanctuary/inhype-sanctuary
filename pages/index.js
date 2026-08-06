@@ -165,6 +165,19 @@ const DETAILED_PLANS = [
   },
 ];
 
+const HIGHLIGHT_PHRASES = {
+  plus: ['Tirzepatide or Retatrutide', 'no ceiling', '1 LPG Endermologie Full Body session', 'Priority booking'],
+    elite: ['Tirzepatide or Retatrutide', 'no ceiling', 'LPG Endermologie Full Body sessions', 'NAD+ injections', 'Priority booking', 'GHK-CU', 'Glow 70'],
+    };
+
+    function highlightItem(text, phrases) {
+      if (!phrases || !phrases.length) return text;
+        var esc = phrases.slice().sort(function(a, b) { return b.length - a.length; }).map(function(p) { return p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); });
+          var re = new RegExp('(' + esc.join('|') + ')', 'gi');
+            var parts = text.split(re);
+              return parts.map(function(part, i) { return i % 2 === 1 ? <strong key={i} style={{ color: 'var(--gold)' }}>{part}</strong> : part; });
+              }
+
 const TRUST_ITEMS = [
   { h: 'MD Physician Oversight', p: 'Every member has a licensed MD overseeing their protocol, not just a provider' },
   { h: 'Dose Adjusted Always',   p: 'Your dose is never static, titrated at every visit based on your response' },
@@ -450,9 +463,9 @@ function MembershipModal({ onClose, onCheckout, loadingPlanId }) {
                     <div key={g.label}>
                       <p className="mx-plan-slabel">{g.label}</p>
                       <ul className="mx-plan-list">
-                        {g.items.map(item => <li key={item}>{item}</li>)}
-                      </ul>
-                    </div>
+{g.items.map(item => <li key={item}>{highlightItem(item, HIGHLIGHT_PHRASES[plan.id])}</li>)}
+</ul>
+}                    </div>
                   ))}
                   {plan.discount && <div className="mx-plan-discount">{plan.discount}</div>}
                   <div className="mx-pick-this">{plan.pick}</div>
@@ -1200,7 +1213,7 @@ export default function Home() {
                 <p className="mc-commit">{plan.commit}</p>
                 <hr className="mc-div"/>
                 <ul className="mc-list">
-                  {plan.features.slice(0, 3).map(f => <li key={f}>{f}</li>)}
+                  {plan.features.slice(0, plan.id === 'elite' ? 4 : 3).map(f => <li key={f}>{f}</li>)}
                 </ul>
               </div>
             ))}
