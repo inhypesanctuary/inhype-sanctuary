@@ -81,7 +81,7 @@ async function sendPurchaseNotification({ planName, amount, firstName, lastName,
         'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'InHype Sanctuary <onboarding@resend.dev>',
+        from: 'InHype Sanctuary <noreply@inhypesanctuary.email>',
         to: NOTIFY_EMAIL,
         subject: `New purchase: ${planName} — ${firstName} ${lastName}`,
         html,
@@ -127,7 +127,7 @@ async function sendCustomerConfirmation({ planName, amount, firstName, email, ne
         'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'InHype Sanctuary <onboarding@resend.dev>',
+        from: 'InHype Sanctuary <noreply@inhypesanctuary.email>',
         to: email,
         subject: `Welcome to InHype Sanctuary — ${planName} confirmed`,
         html,
