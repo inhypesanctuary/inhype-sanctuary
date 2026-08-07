@@ -166,17 +166,17 @@ const DETAILED_PLANS = [
 ];
 
 const HIGHLIGHT_PHRASES = {
-  plus: ['Tirzepatide or Retatrutide', 'no ceiling', '1 LPG Endermologie Full Body session', 'Priority booking'],
-    elite: ['Tirzepatide or Retatrutide', 'no ceiling', 'LPG Endermologie Full Body sessions', 'NAD+ injections', 'Priority booking', 'GHK-CU', 'Glow 70'],
-    };
+  plus: ['Tirzepatide or Retatrutide', 'Any therapeutic dose', '1 LPG Endermologie Full Body session', 'Priority booking'],
+    elite: ['Tirzepatide or Retatrutide', 'Any therapeutic dose', '4 LPG Endermologie Full Body sessions', '4 NAD+ injections', 'Priority booking', 'GHK-CU', 'Glow 70', 'Hair loss'],
+      };
 
-    function highlightItem(text, phrases) {
-      if (!phrases || !phrases.length) return text;
+    function highlightItem(text, phrases, featured) {
+  if (!phrases || !phrases.length) return text;
         var esc = phrases.slice().sort(function(a, b) { return b.length - a.length; }).map(function(p) { return p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); });
           var re = new RegExp('(' + esc.join('|') + ')', 'gi');
             var parts = text.split(re);
-              return parts.map(function(part, i) { return i % 2 === 1 ? <strong key={i} style={{ color: 'var(--gold)' }}>{part}</strong> : part; });
-              }
+              return parts.map(function(part, i) { return i % 2 === 1 ? <strong key={i} style={{ color: featured ? '#141008' : 'var(--gold)' }}>{part}</strong> : part; });
+                          }
 
 const TRUST_ITEMS = [
   { h: 'MD Physician Oversight', p: 'Every member has a licensed MD overseeing their protocol, not just a provider' },
