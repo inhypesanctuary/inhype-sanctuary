@@ -465,7 +465,7 @@ function MembershipModal({ onClose, onCheckout, loadingPlanId }) {
                       <ul className="mx-plan-list">
 {g.items.map(item => <li key={item}>{highlightItem(item, HIGHLIGHT_PHRASES[plan.id])}</li>)}
 </ul>
-}                    </div>
+                    </div>
                   ))}
                   {plan.discount && <div className="mx-plan-discount">{plan.discount}</div>}
                   <div className="mx-pick-this">{plan.pick}</div>
