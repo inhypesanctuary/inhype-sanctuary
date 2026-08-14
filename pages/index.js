@@ -656,6 +656,22 @@ function CheckoutForm({ plan, onClose, onSuccess }) {
   const [error, setError]     = useState('');
   const [showFullPolicy, setShowFullPolicy] = useState(false);
   const configuredRef = useRef(false);
+  // Apple Pay is only offered when the browser/device actually supports it
+  // (Safari on iPhone/iPad/Mac with a card in Wallet). Everywhere else this stays
+  // false and the card form is the only option, exactly as before.
+  const [applePayAvailable, setApplePayAvailable] = useState(false);
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' &&
+          window.ApplePaySession &&
+          window.ApplePaySession.canMakePayments()) {
+        setApplePayAvailable(true);
+      }
+    } catch { /* ApplePaySession can throw in unsupported/embedded contexts */ }
+  }, []);
+  // Monthly amount as a plain decimal string ("399.00") for the wallet sheet.
+  // plan.price is a display string like "$399".
+  const planAmount = Number(String(plan.price).replace(/[^\d.]/g, '') || 0).toFixed(2);
   // Mirrors `agreed` state so the CollectJS callback (configured once, closure
   // captured at that time) always reads the current checkbox value, not a stale one.
   const agreedRef = useRef(false);
@@ -694,10 +710,33 @@ function CheckoutForm({ plan, onClose, onSuccess }) {
         paymentSelector: '#co-submit-btn',
         variant: 'inline',
         styleSniffer: true,
+        // Wallet sheet needs to know what it is charging. Set here rather than as a
+        // data-price attribute because it changes with the selected plan.
+        country: 'US',
+        currency: 'USD',
+        price: planAmount,
         fields: {
           ccnumber: { selector: '#co-ccnumber', placeholder: 'Card number' },
           ccexp:    { selector: '#co-ccexp',    placeholder: 'MM / YY' },
           cvv:      { selector: '#co-cvv',      placeholder: 'CVV' },
+          // Apple Pay renders into this element. If Apple Pay is not enabled for the
+          // merchant account or the domain is unverified, Collect.js leaves it empty
+          // and the wrapper below stays hidden.
+          applePay: {
+            selector: '#co-applepay',
+            type: 'buy',
+            style: { button_style: 'white-outline', height: '46px', border_radius: '8px' },
+            recurringPaymentRequest: {
+              paymentDescription: `${plan.name} membership`,
+              regularBilling: {
+                label: `${plan.name} — monthly membership`,
+                amount: planAmount,
+                recurringPaymentIntervalUnit: 'month',
+                recurringPaymentIntervalCount: 1,
+              },
+              managementURL: 'https://www.inhypesanctuary.com/',
+            },
+          },
         },
         validationCallback: function (field, status, message) {
           if (!status && message) setError(message);
@@ -809,6 +848,10 @@ function CheckoutForm({ plan, onClose, onSuccess }) {
         .co-submit{width:100%;background:var(--gold);color:var(--bg);border:none;border-radius:8px;padding:0.95rem;font-size:0.66rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:opacity .2s;}
         .co-submit:hover{opacity:0.88;}
         .co-submit:disabled{opacity:0.5;cursor:wait;}
+        .co-or{display:flex;align-items:center;gap:0.75rem;margin:1rem 0 0.9rem;color:rgba(247,245,240,0.3);font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;}
+        .co-or::before,.co-or::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.12);}
+        .co-applepay{width:100%;min-height:46px;}
+        .co-wallet-hint{text-align:center;font-size:0.66rem;color:rgba(247,245,240,0.35);margin-top:0.5rem;}
         .co-secure{text-align:center;font-size:0.65rem;color:rgba(247,245,240,0.3);margin-top:1rem;}
         @media(max-width:480px){.co-row,.co-row.co-row-3{grid-template-columns:1fr;}}
       `}</style>
@@ -861,6 +904,26 @@ function CheckoutForm({ plan, onClose, onSuccess }) {
           <button id="co-submit-btn" type="submit" className="co-submit" disabled={submitting || !agreed}>
             {submitting ? 'Processing...' : `Confirm & Pay ${plan.price}/mo`}
           </button>
+
+          {applePayAvailable && (
+            <>
+              <div className="co-or"><span>or</span></div>
+              {/* Collect.js injects the Apple Pay button into #co-applepay. It runs the
+                  same callback as the card form, so the server sees an identical
+                  payment_token and needs no change. Kept non-interactive until the
+                  policy checkbox is ticked, so a wallet payment can never skip the
+                  agreement the card path requires. */}
+              <div
+                id="co-applepay"
+                className="co-applepay"
+                aria-disabled={!agreed}
+                style={agreed ? undefined : { opacity: 0.35, pointerEvents: 'none' }}
+              />
+              {!agreed && (
+                <p className="co-wallet-hint">Please agree to the policy above to pay with Apple&nbsp;Pay.</p>
+              )}
+            </>
+          )}
           <p className="co-secure">🔒 Payments processed securely. Your card details never touch our servers.</p>
         </form>
       </div>
@@ -914,10 +977,22 @@ export default function Home() {
         <meta name="description" content="Medical spa in Glendale, CA — GLP therapy, LPG Endermologie, laser hair removal, and advanced aesthetics." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+        {/* Apple Pay. The wallet data-* attributes are read by Collect.js on load.
+            data-price is deliberately NOT set here because the amount differs per
+            membership plan — it is passed at runtime via CollectJS.configure()
+            (see CheckoutForm below). Apple Pay also requires the domain to be listed
+            AND the verification file to be reachable at
+            /.well-known/apple-developer-merchantid-domain-association — both are set
+            up in the Cashnet/NMI portal under Settings > Apple Pay. Without those the
+            button simply never appears; nothing else on the page is affected. */}
         <script
           id="collectjs-script"
           src="https://secure.nmi.com/token/Collect.js"
           data-tokenization-key={process.env.NEXT_PUBLIC_NMI_TOKENIZATION_KEY}
+          data-country="US"
+          data-currency="USD"
+          data-field-apple-pay-required-billing-contact-fields='["postalAddress","name"]'
+          data-field-apple-pay-contact-fields='["phone","email"]'
           defer
         />
       </Head>
