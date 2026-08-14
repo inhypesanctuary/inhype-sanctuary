@@ -194,6 +194,8 @@ export default async function handler(req, res) {
   const params = new URLSearchParams({
     security_key: process.env.NMI_SECURITY_KEY,
     payment_token: token,
+    type:'sale',
+    amount,
     recurring: 'add_subscription',
     plan_payments: '0', // 0 = bills monthly until cancelled (6-month minimum term is enforced by policy, not the gateway)
     plan_amount: amount,
