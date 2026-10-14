@@ -23,12 +23,12 @@ const PLANS = [
     id: 'plus',
     tier: 'Plan 2',
     name: 'Sanctuary Plus',
-    tag: 'Advanced dual or triple agonist therapy with LPG body contouring.',
+    tag: 'Advanced GLP therapy with LPG body contouring.',
     price: '$599',
     commit: '6-month commitment · Upgrade to Elite anytime',
     pick: 'Pick this if you want to lose weight meaningfully while contouring and tightening your body.',
     features: [
-      '4 weekly GLP injections, Tirzepatide or Retatrutide',
+      '4 weekly GLP injections, Tirzepatide or other GLPs',
       'Any therapeutic dose, no ceiling',
       '1 LPG Endermologie Full Body / month',
       'MD reviews bloodwork, determines dosing',
@@ -47,7 +47,7 @@ const PLANS = [
     commit: '6-month commitment',
     pick: 'Pick this if you want maximum weight loss, prevent loose skin and hair loss, and protect your metabolic rate.',
     features: [
-      '4 weekly GLP injections, Tirzepatide or Retatrutide',
+      '4 weekly GLP injections, Tirzepatide or other GLPs',
       'Any therapeutic dose, no ceiling',
       '4 LPG Endermologie Full Body sessions / month',
       '4 NAD+ injections / month',
@@ -105,12 +105,12 @@ const DETAILED_PLANS = [
     id: 'plus',
     tier: 'Plan 2',
     name: 'Sanctuary Plus',
-    tagline: 'Advanced dual or triple agonist therapy with LPG body contouring, for those ready to go further, faster.',
+    tagline: 'Advanced GLP therapy with LPG body contouring, for those ready to go further.',
     price: '$599',
     commit: '6-month commitment · Upgrade to Elite anytime',
     groups: [
       { label: 'GLP Therapy', items: [
-        '4 weekly GLP injections, Tirzepatide or Retatrutide',
+        '4 weekly GLP injections, Tirzepatide or other GLPs',
         'Any therapeutic dose, no ceiling',
         'MD reviews bloodwork and determines starting dose and monthly adjustments',
       ]},
@@ -138,14 +138,14 @@ const DETAILED_PLANS = [
     commit: '6-month commitment',
     groups: [
       { label: 'GLP Therapy', items: [
-        '4 weekly GLP injections, Tirzepatide or Retatrutide',
+        '4 weekly GLP injections, Tirzepatide or other GLPs',
         'Any therapeutic dose, no ceiling',
         'MD reviews bloodwork and determines starting dose and monthly adjustments',
       ]},
       { label: 'Body Contouring', items: [
         '4 LPG Endermologie Full Body sessions / month',
         'Weekly contouring that amplifies fat loss results',
-        "Targets skin laxity, works alongside Retatrutide's muscle-preserving properties to minimize loose skin",
+        'Targets skin laxity and works alongside your GLP therapy',
       ]},
       { label: 'Cellular Renewal', items: [
         '4 NAD+ injections / month',
@@ -166,8 +166,8 @@ const DETAILED_PLANS = [
 ];
 
 const HIGHLIGHT_PHRASES = {
-  plus: ['Tirzepatide or Retatrutide', 'Any therapeutic dose', '1 LPG Endermologie Full Body session', 'Priority booking'],
-    elite: ['Tirzepatide or Retatrutide', 'Any therapeutic dose', '4 LPG Endermologie Full Body sessions', '4 NAD+ injections', 'Priority booking', 'GHK-CU', 'Glow 70', 'Hair loss'],
+  plus: ['Tirzepatide or other GLPs', 'Any therapeutic dose', '1 LPG Endermologie Full Body session', 'Priority booking'],
+    elite: ['Tirzepatide or other GLPs', 'Any therapeutic dose', '4 LPG Endermologie Full Body sessions', '4 NAD+ injections', 'Priority booking', 'GHK-CU', 'Glow 70', 'Hair loss'],
       };
 
     function highlightItem(text, phrases, featured) {
@@ -189,7 +189,7 @@ const COMPARE_ROWS = [
   { label: 'MD Physician Oversight',                       core: 'check', plus: 'check', elite: 'check' },
   { label: '4 Weekly GLP Injections',                       core: 'check', plus: 'check', elite: 'check' },
   { label: 'Tirzepatide (GLP-1 + GIP)',                      core: 'check', plus: 'check', elite: 'check' },
-  { label: 'Retatrutide (GLP-1 + GIP + Glucagon)',           core: 'x',     plus: 'check', elite: 'check' },
+  { label: 'Other GLP therapies (your choice)',               core: 'x',     plus: 'check', elite: 'check' },
   { label: 'Max dose up to 7.5 mg',                          core: 'check', plus: 'x',     elite: 'x' },
   { label: 'Any therapeutic dose',                           core: 'x',     plus: 'check', elite: 'check' },
   { label: 'LPG Endermologie Full Body',                     core: 'x',     plus: '1× / month', elite: '4× / month' },
@@ -201,7 +201,7 @@ const COMPARE_ROWS = [
 ];
 
 const MODAL_FAQ = [
-  { q: 'What is the difference between Tirzepatide and Retatrutide?', a: 'Tirzepatide (Mounjaro) is a dual agonist, it activates GLP-1 and GIP receptors. Retatrutide is a triple agonist, it activates GLP-1, GIP, and Glucagon. The additional Glucagon receptor activation supports gut health and leads to greater fat loss. Both are effective. Retatrutide is the more advanced option, available to Plus and Elite members.' },
+  { q: 'What is the difference between Tirzepatide and other GLPs?', a: 'Tirzepatide (Mounjaro) is an FDA approved GLP-1/GIP therapy and the starting point in every plan. Plus and Elite members also have the option to choose other GLP therapies. Your physician reviews your health history and bloodwork before you start.' },
   { q: 'Will I have loose skin after losing weight?', a: 'Rapid weight loss can cause loose skin. This is one of the main reasons Sanctuary Elite includes 4 LPG Endermologie sessions per month, weekly mechanical stimulation of the skin helps maintain elasticity and tightness as the weight comes off, significantly reducing this risk compared to GLP therapy alone.' },
   { q: 'Does GLP therapy cause hair loss?', a: 'Hair loss (telogen effluvium) can occur with rapid weight loss, it is a known side effect of significant caloric reduction, not the GLP medication itself. Sanctuary Elite addresses this on two levels: NAD+ injections support cellular repair and energy metabolism, and Elite members receive a discount on targeted peptides, specifically GHK-CU and Glow 70, which are clinically used to support hair follicle health and stimulate regrowth during and after significant weight loss.' },
   { q: 'Who oversees my treatment?', a: 'Every InHype Sanctuary membership includes oversight by a licensed MD physician. Physician monitors your protocol, adjusts your dose at every visit, and ensures your treatment is safe and effective throughout the 6-month commitment.' },
@@ -388,10 +388,10 @@ function MembershipModal({ onClose, onCheckout, loadingPlanId }) {
       <section className="mx-science mx-sec">
         <div className="mx-inner">
           <p className="mx-s-eye">The science behind our protocols</p>
-          <h2 className="mx-s-title">Two therapies. <em>One clear difference.</em></h2>
+          <h2 className="mx-s-title">Two options. <em>Your choice.</em></h2>
           <div className="mx-gbar"/>
           <div className="mx-science-intro">
-            <p>Our GLP protocols are built around two of the most advanced weight loss therapies available today. Understanding what each one does, and how they differ, helps you choose the right plan. Both are administered weekly, titrated by physician, and adjusted based on how your body responds.</p>
+            <p>Our GLP protocols start with Tirzepatide, an FDA approved therapy. Plus and Elite members have the option to choose other GLPs. Every therapy is given weekly, titrated by your physician and adjusted based on how your body responds.</p>
           </div>
           <div className="mx-glp-grid">
             <div className="mx-glp-card">
@@ -413,27 +413,19 @@ function MembershipModal({ onClose, onCheckout, loadingPlanId }) {
               </ul>
             </div>
             <div className="mx-glp-card mx-reta">
-              <div className="mx-glp-tag">Triple Agonist · Plans 2 &amp; 3 only</div>
-              <div className="mx-glp-name">Retatrutide</div>
-              <div className="mx-glp-sub">Next-generation, exclusive to InHype Sanctuary</div>
-              <div className="mx-glp-receptors">
-                <span className="mx-receptor mx-active">GLP-1</span>
-                <span className="mx-receptor mx-active">GIP</span>
-                <span className="mx-receptor mx-active">Glucagon</span>
-              </div>
-              <p className="mx-glp-desc">Retatrutide activates all three metabolic receptors. Unlike dual agonists, it has demonstrated a superior ability to preserve lean muscle mass during weight loss, resulting in a leaner, firmer physique and significantly less loose skin.</p>
+              <div className="mx-glp-tag">Plans 2 &amp; 3 only</div>
+              <div className="mx-glp-name">Other GLPs</div>
+              <div className="mx-glp-sub">Your option with Plus &amp; Elite</div>
+              <p className="mx-glp-desc">As a Plus or Elite member, you have the option to choose other GLP therapies. Your physician reviews your history and bloodwork before you start and stays with you through every step.</p>
               <ul className="mx-glp-list">
-                <li>Triple receptor, GLP-1 + GIP + Glucagon</li>
-                <li>Preferentially burns fat while preserving lean muscle</li>
-                <li>Less loose skin, muscle preservation keeps the body firm</li>
-                <li>Superior fat loss outcomes vs dual agonists in clinical data</li>
-                <li>Reduces inflammation and supports gut health via Glucagon</li>
-                <li>Available at any therapeutic dose, no ceiling</li>
+                <li>Your option as a Plus or Elite member</li>
+                <li>Weekly injection, dose titrated by physician</li>
+                <li>Any therapeutic dose, as your physician determines</li>
                 <li>Exclusive to Plus &amp; Elite members</li>
               </ul>
             </div>
           </div>
-          <div className="mx-glp-note">Both therapies are highly effective. Tirzepatide is the proven, well-studied starting point. Retatrutide is for those ready to go further. Physician will guide which is right for you and when to transition.</div>
+          <div className="mx-glp-note">Tirzepatide is the proven, well studied starting point. Plus and Elite members can choose other GLPs, with physician oversight at every step.</div>
         </div>
       </section>
 
@@ -1292,7 +1284,7 @@ export default function Home() {
           {activeTab==='injections' && <div className="cards">
             {[
               {h:'Tirzepatide (Mounjaro)', p:'FDA-approved GLP-1/GIP dual agonist. Clinically proven for significant, sustained weight loss with physician supervision.'},
-              {h:'Retatrutide',            p:'Triple agonist (GLP-1, GIP + Glucagon), Phase 3 clinical trials. The most advanced weight loss therapy available.'},
+              {h:'Other GLP Therapies',    p:'Plus and Elite members can choose additional GLP options, always with physician oversight.'},
               {h:'NAD+ Injections',        p:'Cellular energy restoration. Supports metabolic function, cognitive clarity, and anti-aging at the cellular level.'},
             ].map(c => <div key={c.h} className="card"><h3>{c.h}</h3><p>{c.p}</p></div>)}
           </div>}
