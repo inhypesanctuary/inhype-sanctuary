@@ -902,8 +902,39 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>InHype Sanctuary — Wellness & Beauty Spa · Glendale, CA</title>
-        <meta name="description" content="Medical spa in Glendale, CA — GLP therapy, LPG Endermologie, laser hair removal, and advanced aesthetics." />
+        <title>InHype Sanctuary Medical Spa · Glendale, CA</title>
+        <meta name="description" content="Physician supervised medical spa in downtown Glendale, CA. Tirzepatide plans, NAD+, peptides, LPG Endermologie, Morpheus8 and laser hair removal." />
+        <link rel="canonical" href="https://www.inhypesanctuary.com/" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'MedicalBusiness',
+            name: 'InHype Sanctuary Medical Spa Glendale',
+            url: 'https://www.inhypesanctuary.com/',
+            telephone: '+1-209-330-0033',
+            foundingDate: '2019-01-04',
+            address: {
+              '@type': 'PostalAddress',
+              streetAddress: '110 E Wilson Ave',
+              addressLocality: 'Glendale',
+              addressRegion: 'CA',
+              postalCode: '91206',
+              addressCountry: 'US',
+            },
+            openingHoursSpecification: [{
+              '@type': 'OpeningHoursSpecification',
+              dayOfWeek: ['Monday','Tuesday','Wednesday','Thursday','Friday'],
+              opens: '09:00',
+              closes: '18:00',
+            }],
+            employee: { '@type': 'Physician', name: 'Kevin Do, MD', jobTitle: 'Medical Director' },
+            sameAs: [
+              'https://www.instagram.com/inhypesanctuary',
+              'https://www.yelp.com/biz/inhype-sanctuary-spa-glendale',
+            ],
+          }) }}
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
         <script
@@ -1371,6 +1402,7 @@ export default function Home() {
               <div style={{width:28,height:1,background:'var(--gold)',opacity:0.4,margin:'0 0 2rem'}}/>
               <p>Every transformation starts with a conversation. Reach out to schedule your complimentary consultation, our team will guide you through every step.</p>
               <div className="ci"><div className="ci-icon">📍</div><div><p className="ci-label">Address</p><span className="ci-val">110 E Wilson Ave, Glendale, CA 91206</span></div></div>
+              <div className="ci"><div className="ci-icon">🕘</div><div><p className="ci-label">Hours</p><span className="ci-val">Monday to Friday, 9am to 6pm · By appointment</span></div></div>
               <div className="ci"><div className="ci-icon">📞</div><div><p className="ci-label">Phone</p><a href="tel:2093300033" className="ci-val">(209) 330-0033</a></div></div>
               <div className="ci"><div className="ci-icon">✉</div><div><p className="ci-label">Email</p><a href="mailto:inhype.sanctuary@icloud.com" className="ci-val">inhype.sanctuary@icloud.com</a></div></div>
               <div className="ci"><div className="ci-icon">★</div><div><p className="ci-label">Reviews</p><a href="https://www.yelp.com/biz/inhype-sanctuary-spa-glendale?osq=InHype+Sanctuary&override_cta=Request+an+appointment" target="_blank" rel="noreferrer" className="ci-val">Read our reviews on Yelp</a></div></div>
