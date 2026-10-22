@@ -905,6 +905,8 @@ export default function Home() {
         <title>InHype Sanctuary Medical Spa · Glendale, CA</title>
         <meta name="description" content="Physician supervised medical spa in downtown Glendale, CA. Tirzepatide plans, NAD+, peptides, LPG Endermologie, Morpheus8 and laser hair removal." />
         <link rel="canonical" href="https://www.inhypesanctuary.com/" />
+        <link rel="icon" type="image/png" sizes="400x400" href="/logo.png" />
+        <link rel="apple-touch-icon" href="/logo.png" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify({
@@ -912,6 +914,8 @@ export default function Home() {
             '@type': 'MedicalBusiness',
             name: 'InHype Sanctuary Medical Spa Glendale',
             url: 'https://www.inhypesanctuary.com/',
+            logo: 'https://www.inhypesanctuary.com/logo.png',
+            image: 'https://www.inhypesanctuary.com/hero-poster.jpg',
             telephone: '+1-209-330-0033',
             foundingDate: '2019-01-04',
             address: {
